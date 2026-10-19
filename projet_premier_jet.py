@@ -288,40 +288,21 @@ def dessiner_salle(salle):
 def afficher():
     ecran.fill(FOND)
 
-    titre = police.render(
-        "LABYRINTHE QUATERNAIRE", True, BLEU
-    )
-    ecran.blit(
-        titre,
-        titre.get_rect(center=(LARGEUR // 2, 35))
-    )
+    titre = police.render("LABYRINTHE QUATERNAIRE", True, BLEU)
 
-    texte(
-        f"Nombre de salles : {len(salles)}",
-        20, 75
-    )
+    ecran.blit(titre,titre.get_rect(center=(LARGEUR // 2, 35)))
+
+    texte(f"Nombre de salles : {len(salles)}",20, 75)
 
     dessiner_salle(actuelle)
 
-    texte(
-        "Le noeud du haut est la salle actuelle",
-        180, 420, BLANC, petite_police
-    )
+    texte("Le noeud du haut est la salle actuelle",180, 420, BLANC, petite_police)
 
-    texte(
-        "Touches 1, 2, 3, 4 : acceder aux fils verts",
-        145, 465, BLANC, petite_police
-    )
+    texte("Touches 1, 2, 3, 4 : acceder aux fils verts",145, 465, BLANC, petite_police)
 
-    texte(
-        "Touche 0 : retourner au pere",
-        235, 500, BLANC, petite_police
-    )
+    texte("Touche 0 : retourner au pere",235, 500, BLANC, petite_police)
 
-    texte(
-        "Echap : quitter",
-        320, 535, BLANC, petite_police
-    )
+    texte("Echap : quitter",320, 535, BLANC, petite_police)
 
     pygame.display.flip()
 

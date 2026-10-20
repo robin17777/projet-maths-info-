@@ -114,6 +114,7 @@ horloge = pygame.time.Clock()
 FOND = (30, 33, 45)
 BLANC = (240, 240, 240)
 GRIS = (150, 155, 165)
+GRISF = (20, 25, 35)
 VERT = (50, 205, 130)
 BLEU = (100, 170, 255)
 ROUGE = (255, 100, 100)
@@ -191,8 +192,8 @@ def texte(message, x, y, couleur=BLANC, police_utilisee=None):
     #pour la police d'écriture
     if police_utilisee is None:
         police_utilisee = police
-#pour transformer le texte en image a afficher
-    image = police_utilisee.render(str(message), True, couleur)
+    #pour transformer le texte en image a afficher
+    image = police_utilisee.render(str(message), True, couleur) #true pour rendre le texte plus lissible 
     ecran.blit(image, (x, y))
 
 
@@ -208,7 +209,7 @@ def dessiner_salle(salle):
     centre_x = LARGEUR // 2
     y_pere = 155
 
-    positions_x = [110, 303, 496, 689]
+    positions_x = [110, 303, 496, 689] # des 4 fils sur la largeur 
     y_fils = 340
 
     types = salle.voir_suivant()
@@ -216,30 +217,20 @@ def dessiner_salle(salle):
     # Branches entre le pere et les fils
     for i in range(4):
         couleur = VERT if types[i] == 1 else GRIS
-
-        pygame.draw.line(
-            ecran,
-            couleur,
-            (centre_x, y_pere + 25),
-            (positions_x[i], y_fils - 25),
-            4
-        )
+                        #quel ecran , la couleur, coord x , cord y , epaisseur de la ligne
+        pygame.draw.line(ecran,couleur,(centre_x, y_pere + 25),(positions_x[i], y_fils - 25),4)
 
     # Bouton du noeud pere
-    rect_pere = pygame.Rect(
-        centre_x - 75, y_pere - 25, 150, 50
-    )
+                      #rectangle(coord x,coord y,longueur,hauteur)
+    rect_pere = pygame.Rect(centre_x - 75, y_pere - 25, 150, 50)
+                                            #arrondi sur les coin du rectangle de 10 pixel
+    pygame.draw.rect(ecran, BLEU, rect_pere, border_radius=10)
 
-    pygame.draw.rect(
-        ecran, BLEU, rect_pere, border_radius=10
-    )
-
-    identifiant = salles.index(salle) + 1
-    nom = police.render(
-        f"Salle {identifiant}", True, (20, 25, 35)
-    )
+    identifiant = salles.index(salle) + 1 #pour avoir le num de la salle avec son indexe dans la liste
+    nom = police.render(f"Salle {identifiant}", True, GRISF)
     ecran.blit(nom, nom.get_rect(center=rect_pere.center))
-
+                    #pour avoir les coord du centre du rectangle
+    """Ici jusqu'a la fin ca sert pour les boutons"""               
     # Le clic sur le pere permet de remonter
     boutons.append((rect_pere, 0))
 
@@ -251,34 +242,19 @@ def dessiner_salle(salle):
         accessible = types[i] == 1
         couleur = VERT if accessible else GRIS
 
-        rect_fils = pygame.Rect(
-            x - 55, y_fils - 25, 110, 50
-        )
+        rect_fils = pygame.Rect(x - 55, y_fils - 25, 110, 50)
 
-        pygame.draw.rect(
-            ecran, couleur, rect_fils, border_radius=10
-        )
+        pygame.draw.rect(ecran, couleur, rect_fils, border_radius=10)
 
-        nom_fils = (
-            f"Fils {numero}" if accessible else "Mur"
-        )
+        nom_fils = (f"Fils {numero}" if accessible else "Mur")
 
-        texte_fils = petite_police.render(
-            nom_fils, True, (25, 30, 35)
-        )
+        texte_fils = petite_police.render(nom_fils, True, GRISF)
 
-        ecran.blit(
-            texte_fils,
-            texte_fils.get_rect(center=rect_fils.center)
-        )
+        ecran.blit(texte_fils,texte_fils.get_rect(center=rect_fils.center))
+        #pour mettre le chiffre a taper sous chaque fils 
+        touche = petite_police.render(str(numero), True, BLANC)
 
-        touche = petite_police.render(
-            str(numero), True, BLANC
-        )
-        ecran.blit(
-            touche,
-            touche.get_rect(center=(x, y_fils + 45))
-        )
+        ecran.blit(touche,touche.get_rect(center=(x, y_fils + 45)))
 
         # Seules les salles accessibles sont cliquables
         if accessible:
@@ -327,7 +303,7 @@ while actif:
     for evenement in pygame.event.get():
         if evenement.type == pygame.QUIT:
             actif = False
-
+        #pour les touches préssées au clavier 
         elif evenement.type == pygame.KEYDOWN:
             if evenement.key == pygame.K_ESCAPE:
                 actif = False
@@ -346,13 +322,13 @@ while actif:
 
             elif evenement.key in (pygame.K_4, pygame.K_KP4):
                 actuelle = actuelle.acceder_salle(4)
-        #c   fait de  meme mais pour avoir la version clickable
+        #   fait de  meme mais pour avoir la version clickable
         elif evenement.type == pygame.MOUSEBUTTONDOWN:
-            if evenement.button == 1:
-                position = evenement.pos
+            if evenement.button == 1: #voir si c'est le clic gauche 
+                position = evenement.pos #position du clic coord x et y 
 
                 for rectangle, numero in boutons:
-                    if rectangle.collidepoint(position):
+                    if rectangle.collidepoint(position): #verifie qu'on ai bien cliqué dans un recatngle 
                         if numero == 0:
                                actuelle = actuelle.acceder_salle(0)
                         else:

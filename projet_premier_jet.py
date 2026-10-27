@@ -1,7 +1,8 @@
 
 import pygame
 import random
-boutons = []
+boutons_salles = []
+boutons =[]
 # =========================
 # CLASSE SALLE
 # =========================
@@ -107,6 +108,7 @@ HAUTEUR = 600
 ecran = pygame.display.set_mode((LARGEUR, HAUTEUR))
 pygame.display.set_caption("Labyrinthe quaternaire")
 
+
 police = pygame.font.SysFont("Arial", 25)
 petite_police = pygame.font.SysFont("Arial", 19)
 horloge = pygame.time.Clock()
@@ -198,13 +200,38 @@ def texte(message, x, y, couleur=BLANC, police_utilisee=None):
 
 
 # =========================
+# PARAMETRES
+# =========================
+def afficher_parametres():
+    ecran.fill(FOND)
+
+    titre = police.render("PARAMETRES", True, BLEU)
+    ecran.blit(titre, titre.get_rect(center=(LARGEUR // 2, 80)))
+
+    # Bouton retour
+    retour = pygame.Rect(20, 20, 120, 40)
+    pygame.draw.rect(ecran, BLEU, retour, border_radius=10)
+    txt_retour = petite_police.render("Retour", True, GRISF)
+    ecran.blit(txt_retour, txt_retour.get_rect(center=retour.center))
+    boutons.append((retour, "retour"))
+
+    texte("Le noeud du haut est la salle actuelle",20, 490, BLANC, petite_police)
+
+    texte("Touches 1, 2, 3, 4 : acceder aux fils verts",20, 510, BLANC, petite_police)
+
+    texte("Touche 0 : retourner au pere",20, 530, BLANC, petite_police)
+
+    texte("Echap : quitter",20, 550, BLANC, petite_police)
+
+    pygame.display.flip()
+# =========================
 # DESSIN D'UNE SALLE
 # =========================
 
     
 
 def dessiner_salle(salle):
-    global boutons
+    global boutons_salles
 
     centre_x = LARGEUR // 2
     y_pere = 155
@@ -213,6 +240,17 @@ def dessiner_salle(salle):
     y_fils = 340
 
     types = salle.voir_suivant()
+
+
+
+    #bouton parametre
+    settings=pygame.Rect(650, 20, 130, 40)
+    pygame.draw.rect(ecran, BLEU, settings, border_radius=10)
+    txt_para=petite_police.render("Parametres",True,GRISF)
+    ecran.blit(txt_para, txt_para.get_rect(center=settings.center))
+    boutons.append((settings, "parametres"))
+
+
 
     # Branches entre le pere et les fils
     for i in range(4):
@@ -230,11 +268,11 @@ def dessiner_salle(salle):
     nom = police.render(f"Salle {identifiant}", True, GRISF)
     ecran.blit(nom, nom.get_rect(center=rect_pere.center))
                     #pour avoir les coord du centre du rectangle
-    """Ici jusqu'a la fin ca sert pour les boutons"""               
+    """Ici jusqu'a la fin ca sert pour les boutons_salles"""               
     # Le clic sur le pere permet de remonter
-    boutons.append((rect_pere, 0))
+    boutons_salles.append((rect_pere, 0))
 
-    # Les quatre boutons fils
+    # Les quatre boutons_salles fils
     for i in range(4):
         x = positions_x[i]
         numero = i + 1
@@ -258,10 +296,14 @@ def dessiner_salle(salle):
 
         # Seules les salles accessibles sont cliquables
         if accessible:
-            boutons.append((rect_fils, numero))
+            boutons_salles.append((rect_fils, numero))
 
 
 def afficher():
+
+    boutons.clear()
+    boutons_salles.clear()
+
     ecran.fill(FOND)
 
     titre = police.render("LABYRINTHE QUATERNAIRE", True, BLEU)
@@ -272,13 +314,7 @@ def afficher():
 
     dessiner_salle(actuelle)
 
-    texte("Le noeud du haut est la salle actuelle",180, 420, BLANC, petite_police)
 
-    texte("Touches 1, 2, 3, 4 : acceder aux fils verts",145, 465, BLANC, petite_police)
-
-    texte("Touche 0 : retourner au pere",235, 500, BLANC, petite_police)
-
-    texte("Echap : quitter",320, 535, BLANC, petite_police)
 
     pygame.display.flip()
 
@@ -297,6 +333,7 @@ if nombre is None:
 racine, salles = creer_labyrinthe(nombre)
 actuelle = racine
 
+ecran_actuel = "labyrinthe"
 actif = True
 
 while actif:
@@ -307,35 +344,51 @@ while actif:
         elif evenement.type == pygame.KEYDOWN:
             if evenement.key == pygame.K_ESCAPE:
                 actif = False
-            #pour acceder au salle avec les boutons 1,2,3,4
-            elif evenement.key in (pygame.K_0, pygame.K_KP0):
-                actuelle = actuelle.acceder_salle(0)
+            elif ecran_actuel == "labyrinthe":
+                #pour acceder au salle avec les boutons_salles 1,2,3,4
+                if evenement.key in (pygame.K_0, pygame.K_KP0):
+                    actuelle = actuelle.acceder_salle(0)
 
-            elif evenement.key in (pygame.K_1, pygame.K_KP1):
-                actuelle = actuelle.acceder_salle(1)
+                elif evenement.key in (pygame.K_1, pygame.K_KP1):
+                    actuelle = actuelle.acceder_salle(1)
 
-            elif evenement.key in (pygame.K_2, pygame.K_KP2):
-                actuelle = actuelle.acceder_salle(2)
+                elif evenement.key in (pygame.K_2, pygame.K_KP2):
+                    actuelle = actuelle.acceder_salle(2)
 
-            elif evenement.key in (pygame.K_3, pygame.K_KP3):
-                actuelle = actuelle.acceder_salle(3)
+                elif evenement.key in (pygame.K_3, pygame.K_KP3):
+                    actuelle = actuelle.acceder_salle(3)
 
-            elif evenement.key in (pygame.K_4, pygame.K_KP4):
-                actuelle = actuelle.acceder_salle(4)
+                elif evenement.key in (pygame.K_4, pygame.K_KP4):
+                    actuelle = actuelle.acceder_salle(4)
         #   fait de  meme mais pour avoir la version clickable
         elif evenement.type == pygame.MOUSEBUTTONDOWN:
             if evenement.button == 1: #voir si c'est le clic gauche 
                 position = evenement.pos #position du clic coord x et y 
+                if ecran_actuel == "labyrinthe":
+                    for rectangle, numero in boutons_salles:
+                        if rectangle.collidepoint(position): #verifie qu'on ai bien cliqué dans un recatngle 
+                            if numero == 0:
+                                actuelle = actuelle.acceder_salle(0)
+                            else:
+                                actuelle = actuelle.acceder_salle(numero)
 
-                for rectangle, numero in boutons:
-                    if rectangle.collidepoint(position): #verifie qu'on ai bien cliqué dans un recatngle 
-                        if numero == 0:
-                               actuelle = actuelle.acceder_salle(0)
-                        else:
-                            actuelle = actuelle.acceder_salle(numero)
+                            break
 
+                for rectangle, action in boutons:
+                    if rectangle.collidepoint(position):
+                        if action == "parametres":
+                            ecran_actuel="parametres"
+                        elif action == "retour":
+                            ecran_actuel = "labyrinthe"
+                            
                         break
-    afficher()
+
+    if ecran_actuel == "labyrinthe":
+        afficher()
+
+    elif ecran_actuel == "parametres":
+        afficher_parametres()
+
     horloge.tick(60)
 
 pygame.quit()

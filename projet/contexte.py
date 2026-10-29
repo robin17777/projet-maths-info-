@@ -10,8 +10,8 @@ boutons =[]
 
 pygame.init()
 
-LARGEUR = 800
-HAUTEUR = 600
+LARGEUR = 1500
+HAUTEUR = 900
 
 ecran = pygame.display.set_mode((LARGEUR, HAUTEUR))
 pygame.display.set_caption("Labyrinthe quaternaire")
@@ -19,15 +19,22 @@ pygame.display.set_caption("Labyrinthe quaternaire")
 
 police = pygame.font.SysFont("Arial", 25)
 petite_police = pygame.font.SysFont("Arial", 19)
+grande_police = pygame.font.SysFont("Arial", 34)
 horloge = pygame.time.Clock()
 
-FOND = (30, 33, 45)
-BLANC = (240, 240, 240)
-GRIS = (150, 155, 165)
-GRISF = (20, 25, 35)
-VERT = (50, 205, 130)
-BLEU = (100, 170, 255)
-ROUGE = (255, 100, 100)
+
+# COULEURS DU JEU
+
+FOND = (17, 24, 39)
+BLANC = (241, 245, 249)
+GRIS = (100, 116, 139)
+GRISF = (17, 24, 39)
+VERT = (52, 211, 153)
+BLEU = (56, 189, 248)
+ROUGE = (251, 113, 133) 
+ORANGE = (255,127,0)
+JAUNE = (255,215,0)
+
 
 
 

@@ -1,31 +1,43 @@
+
 import random
 import pygame
 from class_salle import *
 from contexte import *
 
+
 def creer_labyrinthe(nombre):
     racine = Salle(None, 1)
     salles = [racine]
 
-    while len(salles) < nombre:
+    for i in range(nombre-1):
         possibles = []
-        for salle in salles: # on vient ajouter tout les fils dans la liste des possibilités
+
+        # On ajoute tous les fils disponibles dans la liste des possibilités
+        for salle in salles:
             for numero in range(1, 5):
                 if numero == 1:
                     fils = salle.f1
                 elif numero == 2:
                     fils = salle.f2
                 elif numero == 3:
-                  fils = salle.f3
+                    fils = salle.f3
                 else:
-                  fils = salle.f4
+                    fils = salle.f4
+
                 if fils is None:
                     possibles.append((salle, numero))
-        if not possibles: #si y'a pas de possibilité on stop mais ca devrait jamais arriver
+
+        # S'il n'y a plus de possibilité, on arrête
+        if not possibles:
             break
-        parent, numero = random.choice(possibles) # parent prend le parent de la salle et numero son fils de dispo
-        parent.set_fils(numero, 1)
-        #cette partie ajouter a la liste salle l'enfant qui vient d'être créé 
+
+        parent, numero = random.choice(possibles)
+        if i ==nombre-2:
+            parent.set_fils(numero,3)
+        else:
+            parent.set_fils(numero, 1)
+
+        # On récupère l'enfant qui vient d'être créé
         if numero == 1:
             enfant = parent.f1
         elif numero == 2:
@@ -46,10 +58,12 @@ def demander_nombre_salles():
 
     while True:
         for evenement in pygame.event.get():
+
             if evenement.type == pygame.QUIT:
                 return None
 
             if evenement.type == pygame.KEYDOWN:
+
                 if evenement.key == pygame.K_ESCAPE:
                     return None
 
@@ -62,47 +76,54 @@ def demander_nombre_salles():
                 elif evenement.key == pygame.K_BACKSPACE:
                     nombre = nombre[:-1]
                     message_erreur = ""
-                #verifie que on tape bien un chiffre et que le nombre depasse pas 5 chiffre
+
+                # Vérifie qu'on tape un chiffre et que le nombre ne dépasse pas 5 chiffres
                 elif evenement.unicode.isdigit() and len(nombre) < 5:
                     nombre += evenement.unicode
                     message_erreur = ""
 
+        # Fond de l'écran
         ecran.fill(FOND)
 
-        titre = police.render("LABYRINTHE QUATERNAIRE",True,BLEU)
+        # Titre du jeu
+        texte("LABYRINTHE QUATERNAIRE", LARGEUR // 2, 100, BLEU, police, centrer=True)
 
-        ecran.blit(titre, titre.get_rect(center=(LARGEUR // 2, 100)))
-
-        question = police.render("Combien de salles veux-tu creer ?",True,BLANC)
-
-        ecran.blit(question, question.get_rect(center=(LARGEUR // 2, 190)))
+        # Question
+        texte("Combien de salles veux-tu creer ?", LARGEUR // 2, 190, BLANC, police, centrer=True)
 
         # Champ de saisie
-        champ = pygame.Rect(250, 240, 300, 55)
+        champ = pygame.Rect(LARGEUR // 2 - 150, 240, 300, 55)
         pygame.draw.rect(ecran, BLANC, champ, 2, border_radius=5)
 
-        contenu = police.render(nombre, True, BLANC)
-        ecran.blit(contenu, contenu.get_rect(center=champ.center))
+        # Nombre écrit dans le champ
+        texte(nombre, champ.centerx, champ.centery, BLANC, police, centrer=True)
 
-        aide = petite_police.render("Tape un nombre puis appuie sur Entree",True,GRIS)
+        # Indication
+        texte("Tape un nombre puis appuie sur Entree", LARGEUR // 2, 335, GRIS, petite_police, centrer=True)
 
-        ecran.blit(aide, aide.get_rect(center=(LARGEUR // 2, 335)))
+        # Quitter
+        texte("Echap : quitter", LARGEUR // 2, 375, GRIS, petite_police, centrer=True)
 
-        sortie = petite_police.render("Echap : quitter",True,GRIS)
-
-        ecran.blit(sortie, sortie.get_rect(center=(LARGEUR // 2, 375)))
-
+        # Message d'erreur
         if message_erreur:
-            erreur = petite_police.render(message_erreur, True, ROUGE)
-            ecran.blit(erreur,erreur.get_rect(center=(LARGEUR // 2, 430)))
+            texte(message_erreur, LARGEUR // 2, 430, ROUGE, petite_police, centrer=True)
 
-        pygame.display.flip() #pour afficher la chose 
+        pygame.display.flip()
         horloge.tick(30)
 
-def texte(message, x, y, couleur=BLANC, police_utilisee=None):
-    #pour la police d'écriture
+
+def texte(message, x, y, couleur=BLANC, police_utilisee=None, centrer=False):
+
+    # Choisit la police par défaut
     if police_utilisee is None:
         police_utilisee = police
-    #pour transformer le texte en image a afficher
-    image = police_utilisee.render(str(message), True, couleur) #true pour rendre le texte plus lissible 
-    ecran.blit(image, (x, y))
+
+    # Transforme le texte en image
+    image = police_utilisee.render(str(message), True, couleur)
+
+    # Affiche le texte centré ou normalement
+    if centrer:
+        rectangle = image.get_rect(center=(x, y))
+        ecran.blit(image, rectangle)
+    else:
+        ecran.blit(image, (x, y))

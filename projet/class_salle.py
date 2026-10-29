@@ -2,8 +2,9 @@
 
 class Salle:
     def __init__(self, pere=None, type_fils=1):
-        self.type_fils = type_fils  # 1 = salle, 0 = mur
+        self.type_fils = type_fils  # 1 = salle, 0 = mur , 2 = sortie
         self.pere = pere
+        self.profondeur =0
 
         self.f1 = None
         self.f2 = None
@@ -15,6 +16,7 @@ class Salle:
 
     def set_fils(self, fils, type_fils):
         nouvelle_salle = Salle(self, type_fils)
+        nouvelle_salle.set_profondeur(self.profondeur + 1)
 
         if fils == 1:
             self.f1 = nouvelle_salle
@@ -42,7 +44,13 @@ class Salle:
 
         cible = fils[x]
 
-        if cible is not None and cible.get_type_fils() == 1:
+        if cible is not None and cible.get_type_fils() == 1 or cible.get_type_fils() == 3:
             return cible
 
         return self
+
+    def get_profondeur(self):
+        return self.profondeur
+    
+    def set_profondeur(self, profondeur):
+        self.profondeur = profondeur

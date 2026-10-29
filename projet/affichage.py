@@ -4,29 +4,31 @@ from outils import *
 
 def afficher_parametres():
     ecran.fill(FOND)
+    boutons.clear()
 
-    titre = police.render("PARAMETRES", True, BLEU)
-    ecran.blit(titre, titre.get_rect(center=(LARGEUR // 2, 80)))
+    texte("PARAMETRES", LARGEUR // 2, 80, BLEU, police, centrer=True)
 
     # Bouton retour
-    retour = pygame.Rect(20, 20, 120, 40)
+    retour = pygame.Rect(LARGEUR-150, 20, 130, 40)
     pygame.draw.rect(ecran, BLEU, retour, border_radius=10)
-    txt_retour = petite_police.render("Retour", True, GRISF)
-    ecran.blit(txt_retour, txt_retour.get_rect(center=retour.center))
+    texte("Retour", retour.centerx, retour.centery, GRISF, petite_police, centrer=True)
     boutons.append((retour, "retour"))
 
-    texte("Le noeud du haut est la salle actuelle",20, 490, BLANC, petite_police)
+    texte("Touches et navigation :", LARGEUR // 2, 180, BLANC, grande_police, centrer=True)
 
-    texte("Touches 1, 2, 3, 4 : acceder aux fils verts",20, 510, BLANC, petite_police)
+    texte("Le noeud du haut est la salle actuelle",LARGEUR // 2, 220,BLEU,police, centrer=True)
 
-    texte("Touche 0 : retourner au pere",20, 530, BLANC, petite_police)
+    texte("Touches 1, 2, 3, 4 : acceder aux fils verts",LARGEUR // 2,250, VERT,police, centrer=True)
 
-    texte("Echap : quitter",20, 550, BLANC, petite_police)
+    texte("Touche 0 : retourner au pere",LARGEUR // 2, 280, ORANGE,police, centrer=True)
+
+    texte("Echap : quitter",LARGEUR // 2, 310, BLANC,police, centrer=True)
 
     pygame.display.flip()
 
 def dessiner_salle(salle, salles):
     global boutons_salles
+    boutons.clear()
 
     centre_x = LARGEUR // 2
     y_pere = 155
@@ -36,16 +38,23 @@ def dessiner_salle(salle, salles):
 
     types = salle.voir_suivant()
 
-
-
     #bouton parametre
-    settings=pygame.Rect(650, 20, 130, 40)
+    settings=pygame.Rect(LARGEUR-150, 20, 130, 40)
     pygame.draw.rect(ecran, BLEU, settings, border_radius=10)
-    txt_para=petite_police.render("Parametres",True,GRISF)
-    ecran.blit(txt_para, txt_para.get_rect(center=settings.center))
+    texte("Parametres", settings.centerx, settings.centery, GRISF, petite_police, centrer=True)
     boutons.append((settings, "parametres"))
 
+    #bouton autre lab
+    autre_lab=pygame.Rect(20, 20, 145, 40)
+    pygame.draw.rect(ecran, BLEU, autre_lab, border_radius=10)
+    texte("Autre labyrinhte", autre_lab.centerx, autre_lab.centery, GRISF, petite_police, centrer=True)
+    boutons.append((autre_lab, "autrelab"))
 
+    #bouton nouveau lab
+    nv_lab=pygame.Rect(185, 20, 176, 40)
+    pygame.draw.rect(ecran, BLEU, nv_lab, border_radius=10)
+    texte("Nouveau labyrinhte", nv_lab.centerx, nv_lab.centery, GRISF, petite_police, centrer=True)
+    boutons.append((nv_lab, "nvlab"))
 
     # Branches entre le pere et les fils
     for i in range(4):
@@ -57,11 +66,14 @@ def dessiner_salle(salle, salles):
                       #rectangle(coord x,coord y,longueur,hauteur)
     rect_pere = pygame.Rect(centre_x - 75, y_pere - 25, 150, 50)
                                             #arrondi sur les coin du rectangle de 10 pixel
-    pygame.draw.rect(ecran, BLEU, rect_pere, border_radius=10)
+    pygame.draw.rect(ecran, JAUNE if salle.get_type_fils()==3 else ORANGE, rect_pere, border_radius=10)
+    if salle.get_type_fils()==3:
+        text="Sortie"
+    else:
+        identifiant = salles.index(salle) + 1
+        text=f"Salle {identifiant}"
 
-    identifiant = salles.index(salle) + 1 #pour avoir le num de la salle avec son indexe dans la liste
-    nom = police.render(f"Salle {identifiant}", True, GRISF)
-    ecran.blit(nom, nom.get_rect(center=rect_pere.center))
+    texte(text, rect_pere.centerx, rect_pere.centery, GRISF, police, centrer=True)
                     #pour avoir les coord du centre du rectangle
     """Ici jusqu'a la fin ca sert pour les boutons_salles"""               
     # Le clic sur le pere permet de remonter
@@ -72,22 +84,29 @@ def dessiner_salle(salle, salles):
         x = positions_x[i]
         numero = i + 1
 
-        accessible = types[i] == 1
-        couleur = VERT if accessible else GRIS
+        accessible = types[i] == 1 or types[i]==3
+
+        if types[i] == 1:
+            couleur = VERT
+        elif types[i]==3:
+            couleur = JAUNE
+        else:
+            couleur=GRIS
+                
 
         rect_fils = pygame.Rect(x - 55, y_fils - 25, 110, 50)
 
         pygame.draw.rect(ecran, couleur, rect_fils, border_radius=10)
+        if types[i] == 1:
+            nom_fils =f"Fils {numero}"
+        elif types[i]==3:
+            nom_fils = "Sortie"
+        else:
+            nom_fils ="Mur"
+        texte(nom_fils, rect_fils.centerx, rect_fils.centery, GRISF, petite_police, centrer=True)
 
-        nom_fils = (f"Fils {numero}" if accessible else "Mur")
-
-        texte_fils = petite_police.render(nom_fils, True, GRISF)
-
-        ecran.blit(texte_fils,texte_fils.get_rect(center=rect_fils.center))
         #pour mettre le chiffre a taper sous chaque fils 
-        touche = petite_police.render(str(numero), True, BLANC)
-
-        ecran.blit(touche,touche.get_rect(center=(x, y_fils + 45)))
+        texte(numero, x, y_fils + 45, BLANC, petite_police, centrer=True)
 
         # Seules les salles accessibles sont cliquables
         if accessible:
@@ -101,11 +120,9 @@ def afficher(actuelle, salles):
 
     ecran.fill(FOND)
 
-    titre = police.render("LABYRINTHE QUATERNAIRE", True, BLEU)
-
-    ecran.blit(titre,titre.get_rect(center=(LARGEUR // 2, 35)))
 
     texte(f"Nombre de salles : {len(salles)}",20, 75)
+    texte(f"Profondeur : {actuelle.get_profondeur()}", 20, 110)
 
     dessiner_salle(actuelle, salles)
 

@@ -15,7 +15,6 @@ if nombre is None:
 
 racine, salles = creer_labyrinthe(nombre)
 actuelle = racine
-
 ecran_actuel = "labyrinthe"
 actif = True
 
@@ -59,12 +58,19 @@ while actif:
 
                 for rectangle, action in boutons:
                     if rectangle.collidepoint(position):
-                        if action == "parametres":
+                        if action == "parametres" and ecran_actuel=="labyrinthe":
                             ecran_actuel="parametres"
-                        elif action == "retour":
+                        elif action == "retour" and ecran_actuel =="parametres":
                             ecran_actuel = "labyrinthe"
+                        elif action == "autrelab" and ecran_actuel=="labyrinthe":
+                            racine, salles = creer_labyrinthe(nombre)
+                            actuelle = racine
+                        elif action == "nvlab" and ecran_actuel=="labyrinthe":
+                            racine, salles = creer_labyrinthe(demander_nombre_salles())
+                            actuelle = racine
                             
                         break
+        
 
     if ecran_actuel == "labyrinthe":
         afficher(actuelle, salles)

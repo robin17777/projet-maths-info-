@@ -2,39 +2,33 @@ import pygame
 from contexte import *
 from outils import *
 
-def afficher_parametres():
-    ecran.fill(FOND)
+
+
+def afficher(actuelle, salles):
+
     boutons.clear()
+    boutons_salles.clear()
 
-    texte("PARAMETRES", LARGEUR // 2, 80, BLEU, police, centrer=True)
+    ecran.fill(FOND)
 
-    # Bouton retour
-    retour = pygame.Rect(LARGEUR-150, 20, 130, 40)
-    pygame.draw.rect(ecran, BLEU, retour, border_radius=10)
-    texte("Retour", retour.centerx, retour.centery, GRISF, petite_police, centrer=True)
-    boutons.append((retour, "retour"))
+    texte("Information labyrinthe :",20, 105,BLANC,police)
+    texte(f"Nombre de salles : {len(salles)}",20, 145,BLANC,petite_police)
+    texte(f"Profondeur actuelle : {actuelle.get_profondeur()}", 20, 165,BLANC,petite_police)
+    texte(f"Profondeur max : {profondeur_max(salles)}", 20, 185,BLANC,petite_police)
 
-    texte("Touches et navigation :", LARGEUR // 2, 180, BLANC, grande_police, centrer=True)
-
-    texte("Le noeud du haut est la salle actuelle",LARGEUR // 2, 220,BLEU,police, centrer=True)
-
-    texte("Touches 1, 2, 3, 4 : acceder aux fils verts",LARGEUR // 2,250, VERT,police, centrer=True)
-
-    texte("Touche 0 : retourner au pere",LARGEUR // 2, 280, ORANGE,police, centrer=True)
-
-    texte("Echap : quitter",LARGEUR // 2, 310, BLANC,police, centrer=True)
+    dessiner_salle(actuelle, salles)
 
     pygame.display.flip()
+
 
 def dessiner_salle(salle, salles):
     global boutons_salles
     boutons.clear()
 
-    centre_x = LARGEUR // 2
-    y_pere = 155
+    y_pere = 245
 
-    positions_x = [110, 303, 496, 689] # des 4 fils sur la largeur 
-    y_fils = 340
+    positions_x = [195, 315, 435, 555] # des 4 fils sur la largeur 
+    y_fils = 440
 
     types = salle.voir_suivant()
 
@@ -60,11 +54,11 @@ def dessiner_salle(salle, salles):
     for i in range(4):
         couleur = VERT if types[i] == 1 else GRIS
                         #quel ecran , la couleur, coord x , cord y , epaisseur de la ligne
-        pygame.draw.line(ecran,couleur,(centre_x, y_pere + 25),(positions_x[i], y_fils - 25),4)
+        pygame.draw.line(ecran,couleur,(LARGEUR//4, y_pere + 25),(positions_x[i], y_fils - 25),4)
 
     # Bouton du noeud pere
                       #rectangle(coord x,coord y,longueur,hauteur)
-    rect_pere = pygame.Rect(centre_x - 75, y_pere - 25, 150, 50)
+    rect_pere = pygame.Rect(LARGEUR//4 - 75, y_pere - 25, 150, 50)
                                             #arrondi sur les coin du rectangle de 10 pixel
     pygame.draw.rect(ecran, JAUNE if salle.get_type_fils()==3 else ORANGE, rect_pere, border_radius=10)
     if salle.get_type_fils()==3:
@@ -113,21 +107,45 @@ def dessiner_salle(salle, salles):
             boutons_salles.append((rect_fils, numero))
 
 
-def afficher(actuelle, salles):
-
-    boutons.clear()
-    boutons_salles.clear()
-
+def afficher_parametres():
     ecran.fill(FOND)
+    boutons.clear()
 
+    texte("PARAMETRES", LARGEUR // 2, 80, BLEU, police, centrer=True)
 
-    texte(f"Nombre de salles : {len(salles)}",20, 75)
-    texte(f"Profondeur : {actuelle.get_profondeur()}", 20, 110)
+    # Bouton retour
+    retour = pygame.Rect(LARGEUR-150, 20, 130, 40)
+    pygame.draw.rect(ecran, BLEU, retour, border_radius=10)
+    texte("Retour", retour.centerx, retour.centery, GRISF, petite_police, centrer=True)
+    boutons.append((retour, "retour"))
 
-    dessiner_salle(actuelle, salles)
+    texte("Touches et navigation :", LARGEUR // 2, 180, BLANC, grande_police, centrer=True)
 
+    texte("Le noeud du haut est la salle actuelle",LARGEUR // 2, 220,BLEU,police, centrer=True)
 
+    texte("Touches 1, 2, 3, 4 : acceder aux fils verts",LARGEUR // 2,250, VERT,police, centrer=True)
+
+    texte("Touche 0 : retourner au pere",LARGEUR // 2, 280, ORANGE,police, centrer=True)
+
+    texte("Echap : quitter",LARGEUR // 2, 310, BLANC,police, centrer=True)
 
     pygame.display.flip()
 
+def afficher_gagne():
+    ecran.fill(FOND)
+    boutons.clear()
 
+    texte("VOUS AVEZ GAGNÉ", LARGEUR // 2, 80, JAUNE, grande_police, centrer=True)
+
+    autre_lab = pygame.Rect(LARGEUR//2 - 100, HAUTEUR//2 - 50, 200, 40)
+    pygame.draw.rect(ecran, BLEU, autre_lab, border_radius=10)
+    texte("Autre labyrinthe", autre_lab.centerx, autre_lab.centery, GRISF, petite_police, centrer=True)
+    boutons.append((autre_lab, "autrelab"))
+
+
+    nv_lab = pygame.Rect(LARGEUR//2 - 100, HAUTEUR//2 + 20, 200, 40)
+    pygame.draw.rect(ecran, BLEU, nv_lab, border_radius=10)
+    texte("Nouveau labyrinthe", nv_lab.centerx, nv_lab.centery, GRISF, petite_police, centrer=True)
+    boutons.append((nv_lab, "nvlab"))
+
+    pygame.display.flip()

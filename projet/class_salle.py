@@ -27,6 +27,12 @@ class Salle:
         elif fils == 4:
             self.f4 = nouvelle_salle
 
+    def get_profondeur(self):
+        return self.profondeur
+    
+    def set_profondeur(self, profondeur):
+        self.profondeur = profondeur
+
     def voir_suivant(self):
         return tuple(
             0 if fils is None else fils.get_type_fils()
@@ -49,8 +55,4 @@ class Salle:
 
         return self
 
-    def get_profondeur(self):
-        return self.profondeur
-    
-    def set_profondeur(self, profondeur):
-        self.profondeur = profondeur
+

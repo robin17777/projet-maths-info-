@@ -5,6 +5,57 @@ from class_salle import *
 from contexte import *
 
 
+def demander_nombre_salles():
+    nombre = ""
+    message_erreur = ""
+
+    while True:
+        for evenement in pygame.event.get():
+
+            if evenement.type == pygame.QUIT:
+                return None
+
+            if evenement.type == pygame.KEYDOWN:
+
+                if evenement.key == pygame.K_ESCAPE:
+                    return None
+
+                elif evenement.key == pygame.K_RETURN:
+                    if nombre.isdigit() and int(nombre) >= 1:
+                        return int(nombre)
+                    else:
+                        message_erreur = "Entre un nombre entier positif."
+
+                elif evenement.key == pygame.K_BACKSPACE:
+                    nombre = nombre[:-1]
+                    message_erreur = ""
+
+                # Vérifie qu'on tape un chiffre et que le nombre ne dépasse pas 5 chiffres
+                elif evenement.unicode.isdigit() and len(nombre) < 5:
+                    nombre += evenement.unicode
+                    message_erreur = ""
+
+        ecran.fill(FOND)
+
+        texte("LABYRINTHE QUATERNAIRE", LARGEUR // 2, 100, BLEU, police, centrer=True)
+
+        texte("Combien de salles veux-tu creer ?", LARGEUR // 2, 190, BLANC, police, centrer=True)
+
+        champ = pygame.Rect(LARGEUR // 2 - 150, 240, 300, 55)
+        pygame.draw.rect(ecran, BLANC, champ, 2, border_radius=5)
+
+        texte(nombre, champ.centerx, champ.centery, BLANC, police, centrer=True)
+
+        texte("Tape un nombre puis appuie sur Entree", LARGEUR // 2, 335, GRIS, petite_police, centrer=True)
+
+        # Message d'erreur
+        if message_erreur:
+            texte(message_erreur, LARGEUR // 2, 430, ROUGE, petite_police, centrer=True)
+
+        pygame.display.flip()
+        horloge.tick(30)
+
+
 def creer_labyrinthe(nombre):
     racine = Salle(None, 1)
     salles = [racine]
@@ -52,66 +103,6 @@ def creer_labyrinthe(nombre):
     return racine, salles
 
 
-def demander_nombre_salles():
-    nombre = ""
-    message_erreur = ""
-
-    while True:
-        for evenement in pygame.event.get():
-
-            if evenement.type == pygame.QUIT:
-                return None
-
-            if evenement.type == pygame.KEYDOWN:
-
-                if evenement.key == pygame.K_ESCAPE:
-                    return None
-
-                elif evenement.key == pygame.K_RETURN:
-                    if nombre.isdigit() and int(nombre) >= 1:
-                        return int(nombre)
-                    else:
-                        message_erreur = "Entre un nombre entier positif."
-
-                elif evenement.key == pygame.K_BACKSPACE:
-                    nombre = nombre[:-1]
-                    message_erreur = ""
-
-                # Vérifie qu'on tape un chiffre et que le nombre ne dépasse pas 5 chiffres
-                elif evenement.unicode.isdigit() and len(nombre) < 5:
-                    nombre += evenement.unicode
-                    message_erreur = ""
-
-        # Fond de l'écran
-        ecran.fill(FOND)
-
-        # Titre du jeu
-        texte("LABYRINTHE QUATERNAIRE", LARGEUR // 2, 100, BLEU, police, centrer=True)
-
-        # Question
-        texte("Combien de salles veux-tu creer ?", LARGEUR // 2, 190, BLANC, police, centrer=True)
-
-        # Champ de saisie
-        champ = pygame.Rect(LARGEUR // 2 - 150, 240, 300, 55)
-        pygame.draw.rect(ecran, BLANC, champ, 2, border_radius=5)
-
-        # Nombre écrit dans le champ
-        texte(nombre, champ.centerx, champ.centery, BLANC, police, centrer=True)
-
-        # Indication
-        texte("Tape un nombre puis appuie sur Entree", LARGEUR // 2, 335, GRIS, petite_police, centrer=True)
-
-        # Quitter
-        texte("Echap : quitter", LARGEUR // 2, 375, GRIS, petite_police, centrer=True)
-
-        # Message d'erreur
-        if message_erreur:
-            texte(message_erreur, LARGEUR // 2, 430, ROUGE, petite_police, centrer=True)
-
-        pygame.display.flip()
-        horloge.tick(30)
-
-
 def texte(message, x, y, couleur=BLANC, police_utilisee=None, centrer=False):
 
     # Choisit la police par défaut
@@ -127,3 +118,11 @@ def texte(message, x, y, couleur=BLANC, police_utilisee=None, centrer=False):
         ecran.blit(image, rectangle)
     else:
         ecran.blit(image, (x, y))
+
+def profondeur_max(salles):
+    maximum = 0
+
+    for salle in salles:
+        if salle.get_profondeur() > maximum:
+            maximum = salle.get_profondeur()
+    return maximum

@@ -3,9 +3,6 @@ from contexte import *
 from outils import *
 from affichage import *
 
-# =========================
-# LANCEMENT
-# =========================
 
 nombre = demander_nombre_salles()
 
@@ -71,12 +68,15 @@ while actif:
                             
                         break
         
+    if actuelle.get_type_fils() == 3 and ecran_actuel == "labyrinthe":
+        afficher_gagne()
 
-    if ecran_actuel == "labyrinthe":
+    elif ecran_actuel == "labyrinthe":
         afficher(actuelle, salles)
 
     elif ecran_actuel == "parametres":
         afficher_parametres()
+
 
     horloge.tick(60)
 

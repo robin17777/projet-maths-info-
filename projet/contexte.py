@@ -4,19 +4,15 @@ boutons_salles = []
 boutons =[]
 
 
-# =========================
-# INITIALISATION DE PYGAME
-# =========================
-
 pygame.init()
 
+# ECRAN
 LARGEUR = 1500
 HAUTEUR = 900
-
 ecran = pygame.display.set_mode((LARGEUR, HAUTEUR))
 pygame.display.set_caption("Labyrinthe quaternaire")
 
-
+# POLICES
 police = pygame.font.SysFont("Arial", 25)
 petite_police = pygame.font.SysFont("Arial", 19)
 grande_police = pygame.font.SysFont("Arial", 34)

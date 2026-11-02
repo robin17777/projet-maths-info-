@@ -1,10 +1,11 @@
-
+passages_visites =[5]
 
 class Salle:
     def __init__(self, pere=None, type_fils=1):
         self.type_fils = type_fils  # 1 = salle, 0 = mur , 2 = sortie
         self.pere = pere
         self.profondeur =0
+
 
         self.f1 = None
         self.f2 = None
@@ -43,14 +44,19 @@ class Salle:
         fils = {1: self.f1,2: self.f2,3: self.f3,4: self.f4}
 
         if x == 0:
-            return self if self.pere is None else self.pere
+            if self.pere is None:
+                return self
+
+            passages_visites.append(0)
+            return self.pere
 
         if x not in fils:
             return self
 
         cible = fils[x]
 
-        if cible is not None and cible.get_type_fils() == 1 or cible.get_type_fils() == 3:
+        if cible is not None and cible.get_type_fils() in (1, 2, 3):
+            passages_visites.append(x)
             return cible
 
         return self

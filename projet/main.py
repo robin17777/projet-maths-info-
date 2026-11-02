@@ -62,10 +62,13 @@ while actif:
                         elif action == "autrelab" and ecran_actuel=="labyrinthe":
                             racine, salles = creer_labyrinthe(nombre)
                             actuelle = racine
+                            passages_visites.clear()
                         elif action == "nvlab" and ecran_actuel=="labyrinthe":
                             racine, salles = creer_labyrinthe(demander_nombre_salles())
                             actuelle = racine
-                            
+                            passages_visites.clear()
+                        elif action == "historique" and ecran_actuel =="labyrinthe":
+                            historique()
                         break
         
     if actuelle.get_type_fils() == 3 and ecran_actuel == "labyrinthe":

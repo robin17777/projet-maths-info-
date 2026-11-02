@@ -4,6 +4,7 @@ from outils import *
 
 
 
+
 def afficher(actuelle, salles):
 
     boutons.clear()
@@ -32,12 +33,30 @@ def dessiner_salle(salle, salles):
 
     types = salle.voir_suivant()
 
+    #image 
+    image(ecran, "textures/salle.png", (1150, 550), (700, 700))
+    if types[0]==0:
+        image(ecran, "textures/mur.png", (1150, 290), (100, 80)) #haut
+    if types[2]==0:
+        image(ecran, "textures/mur.png", (1152, 807), (105, 80), angle=180) #bas 
+    if types[3]==0:
+        image(ecran, "textures/mur.png", (891, 550), (100, 70), angle=90) #gauche 
+    if types[1]==0:
+        image(ecran, "textures/mur.png", (1412, 550), (100, 70), angle=90) #droite
+
     #bouton parametre
     settings=pygame.Rect(LARGEUR-150, 20, 130, 40)
     pygame.draw.rect(ecran, BLEU, settings, border_radius=10)
     texte("Parametres", settings.centerx, settings.centery, GRISF, petite_police, centrer=True)
     boutons.append((settings, "parametres"))
 
+    #bouton historique
+    hist=pygame.Rect(LARGEUR-300, 20, 130, 40)
+    pygame.draw.rect(ecran, BLEU, hist, border_radius=10)
+    texte("Historique", hist.centerx, hist.centery, GRISF, petite_police, centrer=True)
+    boutons.append((hist, "historique"))
+  
+    
     #bouton autre lab
     autre_lab=pygame.Rect(20, 20, 145, 40)
     pygame.draw.rect(ecran, BLEU, autre_lab, border_radius=10)
@@ -110,6 +129,7 @@ def dessiner_salle(salle, salles):
 def afficher_parametres():
     ecran.fill(FOND)
     boutons.clear()
+
 
     texte("PARAMETRES", LARGEUR // 2, 80, BLEU, police, centrer=True)
 

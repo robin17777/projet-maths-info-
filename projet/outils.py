@@ -119,6 +119,20 @@ def texte(message, x, y, couleur=BLANC, police_utilisee=None, centrer=False):
     else:
         ecran.blit(image, (x, y))
 
+
+def image(ecran, chemin, position, taille=None, angle=0):
+    img = pygame.image.load(chemin).convert_alpha()
+
+    if taille is not None:
+        img = pygame.transform.scale(img, taille)
+
+    if angle != 0:
+        img = pygame.transform.rotate(img, angle)
+
+    rect = img.get_rect(center=position)
+    ecran.blit(img, rect)
+
+
 def profondeur_max(salles):
     maximum = 0
 
@@ -126,3 +140,13 @@ def profondeur_max(salles):
         if salle.get_profondeur() > maximum:
             maximum = salle.get_profondeur()
     return maximum
+
+def historique():
+    directions = {0: "Salle précédente",1: "Passage 1",2: "Passage 2",3: "Passage 3",4: "Passage 4",5: "Début labyrinthe"}
+    hist=""
+    for passage in passages_visites:
+        if passage ==5:
+            hist+=directions[passage]
+        else:
+            hist= hist+" -> "+directions[passage]
+    print(hist)

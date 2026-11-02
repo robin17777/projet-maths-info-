@@ -1,4 +1,4 @@
-
+import textwrap
 import random
 import pygame
 from class_salle import *
@@ -120,6 +120,14 @@ def texte(message, x, y, couleur=BLANC, police_utilisee=None, centrer=False):
         ecran.blit(image, (x, y))
 
 
+def texte_multiligne(contenu, x, y, couleur, police, largeur=40):
+    lignes = textwrap.wrap(contenu, width=largeur)
+
+    for ligne in lignes:
+        texte(ligne, x, y, couleur, police)
+        y += 25
+
+
 def image(ecran, chemin, position, taille=None, angle=0):
     img = pygame.image.load(chemin).convert_alpha()
 
@@ -142,11 +150,11 @@ def profondeur_max(salles):
     return maximum
 
 def historique():
-    directions = {0: "Salle précédente",1: "Passage 1",2: "Passage 2",3: "Passage 3",4: "Passage 4",5: "Début labyrinthe"}
+    directions = {0: "Salle précédente",1: "1",2: "2",3: "3",4: "4",5: "Début labyrinthe"}
     hist=""
     for passage in passages_visites:
         if passage ==5:
             hist+=directions[passage]
         else:
             hist= hist+" -> "+directions[passage]
-    print(hist)
+    return hist

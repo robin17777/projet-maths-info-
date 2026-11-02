@@ -16,6 +16,7 @@ def afficher(actuelle, salles):
     texte(f"Nombre de salles : {len(salles)}",20, 145,BLANC,petite_police)
     texte(f"Profondeur actuelle : {actuelle.get_profondeur()}", 20, 165,BLANC,petite_police)
     texte(f"Profondeur max : {profondeur_max(salles)}", 20, 185,BLANC,petite_police)
+    texte_multiligne(f"Chemin enprunté : {historique()}", 20, 550,BLANC,petite_police,90)
 
     dessiner_salle(actuelle, salles)
 
@@ -49,13 +50,6 @@ def dessiner_salle(salle, salles):
     pygame.draw.rect(ecran, BLEU, settings, border_radius=10)
     texte("Parametres", settings.centerx, settings.centery, GRISF, petite_police, centrer=True)
     boutons.append((settings, "parametres"))
-
-    #bouton historique
-    hist=pygame.Rect(LARGEUR-300, 20, 130, 40)
-    pygame.draw.rect(ecran, BLEU, hist, border_radius=10)
-    texte("Historique", hist.centerx, hist.centery, GRISF, petite_police, centrer=True)
-    boutons.append((hist, "historique"))
-  
     
     #bouton autre lab
     autre_lab=pygame.Rect(20, 20, 145, 40)

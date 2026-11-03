@@ -37,13 +37,13 @@ def dessiner_salle(salle, salles):
     #image 
     image(ecran, "textures/salle.png", (1150, 550), (700, 700))
     if types[0]==0:
-        image(ecran, "textures/mur.png", (1150, 290), (100, 80)) #haut
+        image(ecran, "textures/mur.png", (1150, 278), (100, 80)) #haut
     if types[2]==0:
-        image(ecran, "textures/mur.png", (1152, 807), (105, 80), angle=180) #bas 
+        image(ecran, "textures/mur.png", (1152, 807), (100, 80), angle=180) #bas 
     if types[3]==0:
-        image(ecran, "textures/mur.png", (891, 550), (100, 70), angle=90) #gauche 
+        image(ecran, "textures/mur.png", (880, 542), (100, 70), angle=90) #gauche 
     if types[1]==0:
-        image(ecran, "textures/mur.png", (1412, 550), (100, 70), angle=90) #droite
+        image(ecran, "textures/mur.png", (1420, 542), (100, 70), angle=90) #droite
 
     #bouton parametre
     settings=pygame.Rect(LARGEUR-150, 20, 130, 40)

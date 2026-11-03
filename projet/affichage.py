@@ -3,7 +3,8 @@ from contexte import *
 from outils import *
 
 
-
+cord_x=1150   # 1150 base
+cord_y=550    # 550 base 
 
 def afficher(actuelle, salles):
 
@@ -34,7 +35,7 @@ def dessiner_salle(salle, salles):
 
     types = salle.voir_suivant()
 
-    #image 
+    #image salle 
     image(ecran, "textures/salle.png", (1150, 550), (700, 700))
     if types[0]==0:
         image(ecran, "textures/mur.png", (1150, 278), (100, 80)) #haut
@@ -45,6 +46,9 @@ def dessiner_salle(salle, salles):
     if types[1]==0:
         image(ecran, "textures/mur.png", (1420, 542), (100, 70), angle=90) #droite
 
+    #image personage
+
+    image(ecran, "textures/aventurier.png", (cord_x, cord_y), (100, 100))
     #bouton parametre
     settings=pygame.Rect(LARGEUR-150, 20, 130, 40)
     pygame.draw.rect(ecran, BLEU, settings, border_radius=10)
@@ -134,14 +138,11 @@ def afficher_parametres():
     boutons.append((retour, "retour"))
 
     texte("Touches et navigation :", LARGEUR // 2, 180, BLANC, grande_police, centrer=True)
-
     texte("Le noeud du haut est la salle actuelle",LARGEUR // 2, 220,BLEU,police, centrer=True)
-
     texte("Touches 1, 2, 3, 4 : acceder aux fils verts",LARGEUR // 2,250, VERT,police, centrer=True)
-
     texte("Touche 0 : retourner au pere",LARGEUR // 2, 280, ORANGE,police, centrer=True)
-
     texte("Echap : quitter",LARGEUR // 2, 310, BLANC,police, centrer=True)
+    texte("Flèches directionelles : déplacer l'aventurier dans la salle",LARGEUR // 2, 340, BLANC,police, centrer=True)
 
     pygame.display.flip()
 

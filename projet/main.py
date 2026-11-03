@@ -2,6 +2,7 @@ import pygame
 from contexte import *
 from outils import *
 from affichage import *
+import affichage
 
 
 nombre = demander_nombre_salles()
@@ -39,6 +40,31 @@ while actif:
 
                 elif evenement.key in (pygame.K_4, pygame.K_KP4):
                     actuelle = actuelle.acceder_salle(4)
+
+                elif evenement.key == pygame.K_DOWN:
+                    if affichage.cord_y+50>=720:
+                        affichage.cord_y=720
+                    else:
+                        affichage.cord_y+=50
+
+                elif evenement.key == pygame.K_UP:
+                    if affichage.cord_y-50<=370:
+                        affichage.cord_y=370
+                    else:
+                        affichage.cord_y-=50
+
+                elif evenement.key == pygame.K_LEFT:
+                    if affichage.cord_x-50<=950:
+                        affichage.cord_x=950
+                    else:
+                        affichage.cord_x-=50
+
+                elif evenement.key == pygame.K_RIGHT:
+                    if affichage.cord_x+50>=1350:
+                        affichage.cord_x=1350
+                    else:
+                        affichage.cord_x+=50
+
         #   fait de  meme mais pour avoir la version clickable
         elif evenement.type == pygame.MOUSEBUTTONDOWN:
             if evenement.button == 1: #voir si c'est le clic gauche 
@@ -64,11 +90,15 @@ while actif:
                             actuelle = racine
                             passages_visites.clear()
                             passages_visites.append(5)
+                            affichage.cord_x=1150
+                            affichage.cord_y=550
                         elif action == "nvlab" and ecran_actuel=="labyrinthe":
                             racine, salles = creer_labyrinthe(demander_nombre_salles())
                             actuelle = racine
                             passages_visites.clear()
                             passages_visites.append(5)
+                            affichage.cord_x=1150
+                            affichage.cord_y=550
                         break
         
     if actuelle.get_type_fils() == 3 and ecran_actuel == "labyrinthe":

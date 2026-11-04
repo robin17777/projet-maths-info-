@@ -4,6 +4,11 @@ from outils import *
 from affichage import *
 import affichage
 
+"""
+parcour profondeur
+quel chemin le meilleur 
+ajouter objet monstres et portes bloqués
+"""
 
 nombre = demander_nombre_salles()
 

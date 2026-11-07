@@ -4,19 +4,20 @@ from outils import *
 
 
 cord_x=1150   # 1150 base
-cord_y=550    # 550 base 
+cord_y=480    # 480 base 
 
 def afficher(actuelle, salles):
 
     boutons.clear()
     boutons_salles.clear()
+    boutons_spe.clear()
 
     ecran.fill(FOND)
 
-    texte("Information labyrinthe :",20, 105,BLANC,police)
-    texte(f"Nombre de salles : {len(salles)}",20, 145,BLANC,petite_police)
-    texte(f"Profondeur actuelle : {actuelle.get_profondeur()}", 20, 165,BLANC,petite_police)
-    texte(f"Profondeur max : {profondeur_max(salles)}", 20, 185,BLANC,petite_police)
+    texte("Information labyrinthe :",20, 125,BLANC,police)
+    texte(f"Nombre de salles : {len(salles)}",20, 165,BLANC,petite_police)
+    texte(f"Profondeur actuelle : {actuelle.get_profondeur()}", 20, 185,BLANC,petite_police)
+    texte(f"Profondeur max : {profondeur_max(salles)}", 20, 205,BLANC,petite_police)
     texte_multiligne(f"Chemin enprunté : {historique()}", 20, 550,BLANC,petite_police,90)
 
     dessiner_salle(actuelle, salles)
@@ -27,45 +28,97 @@ def afficher(actuelle, salles):
 def dessiner_salle(salle, salles):
     global boutons_salles
     boutons.clear()
+    boutons_spe.clear()
 
+    souris = pygame.mouse.get_pos()
     y_pere = 245
-
     positions_x = [195, 315, 435, 555] # des 4 fils sur la largeur 
     y_fils = 440
 
     types = salle.voir_suivant()
 
     #image salle 
-    image(ecran, "textures/salle.png", (1150, 550), (700, 700))
+    image(ecran, "textures/terrain/salle.png", (1150, 550), (700, 700))
     if types[0]==0:
-        image(ecran, "textures/mur.png", (1150, 278), (100, 80)) #haut
+        image(ecran, "textures/terrain/mur.png", (1150, 278), (100, 80)) #haut
     if types[2]==0:
-        image(ecran, "textures/mur.png", (1152, 807), (100, 80), angle=180) #bas 
+        image(ecran, "textures/terrain/mur.png", (1152, 807), (100, 80), angle=180) #bas 
     if types[3]==0:
-        image(ecran, "textures/mur.png", (880, 542), (100, 70), angle=90) #gauche 
+        image(ecran, "textures/terrain/mur.png", (880, 542), (100, 70), angle=90) #gauche 
     if types[1]==0:
-        image(ecran, "textures/mur.png", (1420, 542), (100, 70), angle=90) #droite
+        image(ecran, "textures/terrain/mur.png", (1420, 542), (100, 70), angle=90) #droite
 
     #image personage
 
-    image(ecran, "textures/aventurier.png", (cord_x, cord_y), (100, 100))
-    #bouton parametre
-    settings=pygame.Rect(LARGEUR-150, 20, 130, 40)
-    pygame.draw.rect(ecran, BLEU, settings, border_radius=10)
-    texte("Parametres", settings.centerx, settings.centery, GRISF, petite_police, centrer=True)
+    image(ecran, "textures/personnage/aventurier.png", (cord_x, cord_y), (100, 100))
+    rect_aventurier=pygame.Rect((cord_x, cord_y), (100, 100))
+
+
+    # Cases devant les sorties
+    case_haut = pygame.Rect(1125, 345, 55, 55)
+    case_bas = pygame.Rect(1123, 700, 55, 55)
+    case_gauche = pygame.Rect(935, 520, 55, 55)
+    case_droite = pygame.Rect(1315, 520, 55, 55)
+    case_milieu=pygame.Rect(1120, 520, 60, 60)
+
+
+
+
+    # Bouton rentrer
+    rentrer = pygame.Rect(1050, 50, 130, 40)
+    if rect_aventurier.colliderect(case_haut) or rect_aventurier.colliderect(case_bas) or rect_aventurier.colliderect(case_droite) or rect_aventurier.colliderect(case_gauche) or rect_aventurier.colliderect(case_milieu):
+        if rentrer.collidepoint(souris):
+            couleur = VERTH
+        else:
+            couleur = VERT
+    else:
+        couleur = GRIS
+    pygame.draw.rect(ecran, couleur, rentrer, border_radius=10)
+    texte("Entrer",rentrer.centerx,rentrer.centery,GRISF,petite_police,centrer=True)
+    #boutons.append((rentrer, "rentrer"))
+
+    # Bouton récuperer
+    recup = pygame.Rect(900, 50, 130, 40)
+    boutons_spe.append((recup, "recuperer"))
+
+    # Bouton utiliser
+    use = pygame.Rect(750, 50, 130, 40)
+    boutons_spe.append((use, "utiliser"))
+
+    # Bouton paramètres
+    settings = pygame.Rect(LARGEUR-150, 20, 130, 40)
     boutons.append((settings, "parametres"))
-    
-    #bouton autre lab
-    autre_lab=pygame.Rect(20, 20, 145, 40)
-    pygame.draw.rect(ecran, BLEU, autre_lab, border_radius=10)
-    texte("Autre labyrinhte", autre_lab.centerx, autre_lab.centery, GRISF, petite_police, centrer=True)
+
+    # Bouton autre lab
+    autre_lab = pygame.Rect(20, 20, 145, 40)
     boutons.append((autre_lab, "autrelab"))
 
-    #bouton nouveau lab
-    nv_lab=pygame.Rect(185, 20, 176, 40)
-    pygame.draw.rect(ecran, BLEU, nv_lab, border_radius=10)
-    texte("Nouveau labyrinhte", nv_lab.centerx, nv_lab.centery, GRISF, petite_police, centrer=True)
+    # Bouton nouveau lab
+    nv_lab = pygame.Rect(185, 20, 176, 40)
     boutons.append((nv_lab, "nvlab"))
+
+    # Bouton clear
+    reset = pygame.Rect(20, 70, 220, 40)
+    boutons.append((reset, "reset"))
+
+
+    # Dessin des boutons avec effet hover
+
+    textes = {"recuperer": "Récuperer",
+              "reset":"Réinitialiser l'historique",
+              "utiliser": "Utiliser",
+              "parametres": "Parametres",
+              "autrelab": "Autre labyrinthe",
+              "nvlab": "Nouveau labyrinthe"}
+
+    for bouton, nom in boutons:
+        if bouton.collidepoint(souris):
+            couleur = BLEUH
+        else:
+            couleur = BLEU
+        pygame.draw.rect(ecran, couleur, bouton, border_radius=10)
+        texte(textes[nom],bouton.centerx,bouton.centery,GRISF,petite_police,centrer=True)
+
 
     # Branches entre le pere et les fils
     for i in range(4):

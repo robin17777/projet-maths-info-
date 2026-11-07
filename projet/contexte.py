@@ -2,6 +2,7 @@ import pygame
 
 boutons_salles = []
 boutons =[]
+boutons_spe=[]
 
 
 pygame.init()
@@ -26,7 +27,9 @@ BLANC = (241, 245, 249)
 GRIS = (100, 116, 139)
 GRISF = (17, 24, 39)
 VERT = (52, 211, 153)
+VERTH = (30, 160, 110)
 BLEU = (56, 189, 248)
+BLEUH = (80, 130, 200)
 ROUGE = (251, 113, 133) 
 ORANGE = (255,127,0)
 JAUNE = (255,215,0)

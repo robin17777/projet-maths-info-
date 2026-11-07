@@ -4,11 +4,7 @@ from outils import *
 from affichage import *
 import affichage
 
-"""
-parcour profondeur
-quel chemin le meilleur 
-ajouter objet monstres et portes bloqués
-"""
+
 
 nombre = demander_nombre_salles()
 
@@ -46,29 +42,29 @@ while actif:
                 elif evenement.key in (pygame.K_4, pygame.K_KP4):
                     actuelle = actuelle.acceder_salle(4)
 
-                elif evenement.key == pygame.K_DOWN:
-                    if affichage.cord_y+50>=720:
+                elif evenement.key in (pygame.K_s,pygame.K_DOWN):
+                    if affichage.cord_y+25>=720:
                         affichage.cord_y=720
                     else:
-                        affichage.cord_y+=50
+                        affichage.cord_y+=25
 
-                elif evenement.key == pygame.K_UP:
-                    if affichage.cord_y-50<=370:
+                elif evenement.key in (pygame.K_z,pygame.K_UP):
+                    if affichage.cord_y-25<=370:
                         affichage.cord_y=370
                     else:
-                        affichage.cord_y-=50
+                        affichage.cord_y-=25
 
-                elif evenement.key == pygame.K_LEFT:
-                    if affichage.cord_x-50<=950:
+                elif evenement.key in (pygame.K_q,pygame.K_LEFT):
+                    if affichage.cord_x-25<=950:
                         affichage.cord_x=950
                     else:
-                        affichage.cord_x-=50
+                        affichage.cord_x-=25
 
-                elif evenement.key == pygame.K_RIGHT:
-                    if affichage.cord_x+50>=1350:
+                elif evenement.key in (pygame.K_d,pygame.K_RIGHT):
+                    if affichage.cord_x+25>=1350:
                         affichage.cord_x=1350
                     else:
-                        affichage.cord_x+=50
+                        affichage.cord_x+=25
 
         #   fait de  meme mais pour avoir la version clickable
         elif evenement.type == pygame.MOUSEBUTTONDOWN:
@@ -104,7 +100,11 @@ while actif:
                             passages_visites.append(5)
                             affichage.cord_x=1150
                             affichage.cord_y=550
+                        elif action=="reset" and ecran_actuel=="labyrinthe":
+                            passages_visites.clear()
+                            passages_visites.append(6)
                         break
+        
         
     if actuelle.get_type_fils() == 3 and ecran_actuel == "labyrinthe":
         afficher_gagne()
@@ -114,6 +114,9 @@ while actif:
 
     elif ecran_actuel == "parametres":
         afficher_parametres()
+
+
+    
 
 
     horloge.tick(60)

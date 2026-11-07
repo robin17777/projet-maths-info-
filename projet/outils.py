@@ -150,11 +150,12 @@ def profondeur_max(salles):
     return maximum
 
 def historique():
-    directions = {0: "Salle précédente",1: "1",2: "2",3: "3",4: "4",5: "Début labyrinthe"}
+    directions = {0: "Salle précédente",1: "1",2: "2",3: "3",4: "4",5: "Début labyrinthe",6:"Nouveau point de départ"}
     hist=""
     for passage in passages_visites:
-        if passage ==5:
+        if passage ==5 or passage==6:
             hist+=directions[passage]
         else:
             hist= hist+" -> "+directions[passage]
     return hist
+

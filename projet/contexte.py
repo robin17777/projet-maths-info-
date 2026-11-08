@@ -2,7 +2,7 @@ import pygame
 
 boutons_salles = []
 boutons =[]
-boutons_spe=[]
+boutond=[]
 
 
 pygame.init()

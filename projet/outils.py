@@ -5,6 +5,7 @@ from class_salle import *
 from contexte import *
 
 
+
 def demander_nombre_salles():
     nombre = ""
     message_erreur = ""
@@ -158,4 +159,3 @@ def historique():
         else:
             hist= hist+" -> "+directions[passage]
     return hist
-

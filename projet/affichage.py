@@ -3,14 +3,36 @@ from contexte import *
 from outils import *
 
 
+
 cord_x=1150   # 1150 base
 cord_y=480    # 480 base 
+
+# Zones d'accès (au niveau du module pour être utilisables partout)
+case_haut = pygame.Rect(1125, 345, 55, 55)
+case_bas = pygame.Rect(1123, 700, 55, 55)
+case_gauche = pygame.Rect(935, 520, 55, 55)
+case_droite = pygame.Rect(1315, 520, 55, 55)
+case_milieu = pygame.Rect(1125, 525, 50, 50)
+
+def zone_aventurier():
+    rect = pygame.Rect((cord_x - 10, cord_y - 10), (25, 25))
+    if rect.colliderect(case_haut):
+        return 1
+    if rect.colliderect(case_droite):
+        return 2
+    if rect.colliderect(case_bas):
+        return 3
+    if rect.colliderect(case_gauche):
+        return 4
+    if rect.colliderect(case_milieu):
+        return 0
+    return None
 
 def afficher(actuelle, salles):
 
     boutons.clear()
     boutons_salles.clear()
-    boutons_spe.clear()
+    boutond.clear()
 
     ecran.fill(FOND)
 
@@ -28,7 +50,8 @@ def afficher(actuelle, salles):
 def dessiner_salle(salle, salles):
     global boutons_salles
     boutons.clear()
-    boutons_spe.clear()
+    boutond.clear()
+
 
     souris = pygame.mouse.get_pos()
     y_pere = 245
@@ -51,55 +74,49 @@ def dessiner_salle(salle, salles):
     #image personage
 
     image(ecran, "textures/personnage/aventurier.png", (cord_x, cord_y), (100, 100))
-    rect_aventurier=pygame.Rect((cord_x, cord_y), (100, 100))
-
-
-    # Cases devant les sorties
-    case_haut = pygame.Rect(1125, 345, 55, 55)
-    case_bas = pygame.Rect(1123, 700, 55, 55)
-    case_gauche = pygame.Rect(935, 520, 55, 55)
-    case_droite = pygame.Rect(1315, 520, 55, 55)
-    case_milieu=pygame.Rect(1120, 520, 60, 60)
-
-
+    rect_aventurier=pygame.Rect((cord_x-10, cord_y-10), (25, 25))
+    #pygame.draw.rect(ecran, VERT, rect_aventurier, 2)
 
 
     # Bouton rentrer
     rentrer = pygame.Rect(1050, 50, 130, 40)
-    if rect_aventurier.colliderect(case_haut) or rect_aventurier.colliderect(case_bas) or rect_aventurier.colliderect(case_droite) or rect_aventurier.colliderect(case_gauche) or rect_aventurier.colliderect(case_milieu):
-        if rentrer.collidepoint(souris):
-            couleur = VERTH
-        else:
-            couleur = VERT
+    if zone_aventurier() is not None:
+        couleur = VERTH if rentrer.collidepoint(souris) else VERT
     else:
         couleur = GRIS
     pygame.draw.rect(ecran, couleur, rentrer, border_radius=10)
     texte("Entrer",rentrer.centerx,rentrer.centery,GRISF,petite_police,centrer=True)
-    #boutons.append((rentrer, "rentrer"))
+    boutons.append((rentrer, "rentrer"))
 
     # Bouton récuperer
     recup = pygame.Rect(900, 50, 130, 40)
-    boutons_spe.append((recup, "recuperer"))
+    boutons.append((recup, "recuperer"))
+
 
     # Bouton utiliser
     use = pygame.Rect(750, 50, 130, 40)
-    boutons_spe.append((use, "utiliser"))
+    boutons.append((use, "utiliser"))
+
 
     # Bouton paramètres
     settings = pygame.Rect(LARGEUR-150, 20, 130, 40)
     boutons.append((settings, "parametres"))
+    boutond.append((settings, "parametres"))
 
     # Bouton autre lab
     autre_lab = pygame.Rect(20, 20, 145, 40)
     boutons.append((autre_lab, "autrelab"))
+    boutond.append((autre_lab, "autrelab"))
 
     # Bouton nouveau lab
     nv_lab = pygame.Rect(185, 20, 176, 40)
     boutons.append((nv_lab, "nvlab"))
+    boutond.append((nv_lab, "nvlab"))
 
     # Bouton clear
     reset = pygame.Rect(20, 70, 220, 40)
     boutons.append((reset, "reset"))
+    boutond.append((reset, "reset"))
 
 
     # Dessin des boutons avec effet hover
@@ -111,7 +128,7 @@ def dessiner_salle(salle, salles):
               "autrelab": "Autre labyrinthe",
               "nvlab": "Nouveau labyrinthe"}
 
-    for bouton, nom in boutons:
+    for bouton, nom in boutond:
         if bouton.collidepoint(souris):
             couleur = BLEUH
         else:

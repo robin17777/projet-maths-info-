@@ -65,6 +65,14 @@ while actif:
                         affichage.cord_x=1350
                     else:
                         affichage.cord_x+=25
+                if evenement.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                                        zone = affichage.zone_aventurier()
+                                        if zone is not None:
+                                            nouvelle = actuelle.acceder_salle(zone)
+                                            if nouvelle is not actuelle:
+                                                actuelle = nouvelle
+                                                affichage.cord_x = 1150
+                                                affichage.cord_y = 480
 
         #   fait de  meme mais pour avoir la version clickable
         elif evenement.type == pygame.MOUSEBUTTONDOWN:
@@ -92,17 +100,25 @@ while actif:
                             passages_visites.clear()
                             passages_visites.append(5)
                             affichage.cord_x=1150
-                            affichage.cord_y=550
+                            affichage.cord_y=480
                         elif action == "nvlab" and ecran_actuel=="labyrinthe":
                             racine, salles = creer_labyrinthe(demander_nombre_salles())
                             actuelle = racine
                             passages_visites.clear()
                             passages_visites.append(5)
                             affichage.cord_x=1150
-                            affichage.cord_y=550
+                            affichage.cord_y=480
                         elif action=="reset" and ecran_actuel=="labyrinthe":
                             passages_visites.clear()
                             passages_visites.append(6)
+                        elif action == "rentrer" and ecran_actuel == "labyrinthe":
+                            zone = affichage.zone_aventurier()
+                            if zone is not None:
+                                nouvelle = actuelle.acceder_salle(zone)
+                                if nouvelle is not actuelle:
+                                    actuelle = nouvelle
+                                    affichage.cord_x = 1150
+                                    affichage.cord_y = 480
                         break
         
         

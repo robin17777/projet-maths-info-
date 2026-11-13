@@ -1,0 +1,10 @@
+touches pour mettre dans les parametres 
+une version de l'inventaire pour chaque pour caque slot selectione 
+
+
+
+a faire 
+mettre en place les barres de vies et autre 
+donner une vraie utilite aux objets
+mettre les monstres 
+finir de faire bien les immages des touches dans les parametres 

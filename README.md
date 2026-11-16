@@ -1,84 +1,111 @@
-# 🎮 Labyrinthe quaternaire
+<div align="center">
 
-## 📌 Présentation
+# 🏰 Labyrinthe quaternaire
 
-Ce projet consiste à créer un **labyrinthe quaternaire en Python**, représenté sous la forme d'un arbre dans lequel chaque salle peut posséder jusqu'à quatre salles filles.
+**Un jeu d'exploration en pixel art où le labyrinthe est un arbre à quatre branches.**
 
-L'utilisateur choisit le nombre de salles à générer, puis explore le labyrinthe grâce à une interface graphique réalisée avec **Pygame**. La navigation est possible au clavier ou à la souris.
+![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&logoColor=white)
+![Pygame](https://img.shields.io/badge/Pygame-2.x-34D399)
+![Statut](https://img.shields.io/badge/statut-en%20d%C3%A9veloppement-F59E0B)
 
-## ✨ Fonctionnalités
+*Explorez les salles, ramassez des objets, trouvez la sortie.*
 
-- 🌳 **Génération aléatoire** : création d'un labyrinthe composé du nombre de salles choisi par l'utilisateur.
-- 🧩 **Structure arborescente** : chaque salle peut avoir jusqu'à quatre salles filles.
-- 🚪 **Gestion des murs** : les directions sans salle fille sont représentées par des murs.
-- 🎮 **Navigation au clavier** : déplacement entre les salles à l'aide des touches `0`, `1`, `2`, `3` et `4`.
-- 🖱️ **Interface interactive** : possibilité de cliquer sur les salles accessibles pour se déplacer.
-- 🔙 **Retour à la salle précédente** : possibilité de remonter vers la salle parente.
-- 🖥️ **Interface graphique** : affichage de la salle actuelle, des salles filles et des directions accessibles.
+</div>
 
-## 🛠️ Technologies utilisées
+<!--
+  💡 Ajoutez ici une capture d'écran du jeu :
+  <p align="center"><img src="docs/capture.png" width="700" alt="Capture du jeu"></p>
+-->
 
-- **Python 3**
-- **Pygame** : gestion de la fenêtre, des événements, des dessins et des interactions.
-- **Random** : génération aléatoire de la structure du labyrinthe.
+---
 
-## 🎯 Utilisation
+## ✨ Le principe
 
-1. Lancez le programme.
-2. Entrez le nombre de salles souhaité.
-3. Appuyez sur `Entrée` pour générer le labyrinthe.
-4. Explorez les salles à l'aide du clavier ou de la souris.
+Chaque labyrinthe est généré aléatoirement sous la forme d'un **arbre quaternaire** : chaque salle possède **jusqu'à 4 fils** (haut, droite, bas, gauche). Un côté sans salle est un **mur**.
 
-### Commandes
+Vous commencez dans la salle de départ, vous explorez en descendant dans l'arbre, et vous gagnez en atteignant la **salle de sortie**.
+
+Un panneau d'information vous indique en permanence :
+
+- le **nombre de salles** du labyrinthe,
+- la **profondeur actuelle** et la **profondeur maximale**,
+- le **chemin emprunté** depuis le début.
+
+Un schéma de l'arbre est affiché à gauche : le nœud du haut est votre salle actuelle, les quatre nœuds du bas sont ses fils (verts = salle, gris = mur, jaune = sortie).
+
+---
+
+## 🎮 Fonctionnalités
+
+| | |
+|---|---|
+| 🌳 **Labyrinthes aléatoires** | Choisissez le nombre de salles, puis régénérez ou changez de labyrinthe à volonté |
+| 🧍 **Aventurier déplaçable** | Déplacez-le dans la salle pour atteindre une porte ou un objet |
+| 🎒 **Inventaire à 5 cases** | Ramassez, sélectionnez et utilisez des objets |
+| 🗡️ **Objets** | Épée (3 usages), potion de soin, clé |
+| 📊 **Barre de durabilité** | Les objets à plusieurs usages affichent ce qu'il leur reste |
+| 🧭 **Historique du trajet** | Suivez votre chemin, ou repartez d'un nouveau point de départ |
+| 🖱️ **Clavier ou souris** | Presque toutes les actions sont accessibles des deux façons |
+
+---
+
+## 🕹️ Commandes
 
 | Touche | Action |
-|---|---|
-| `0` | Retourner à la salle parente |
-| `1` | Accéder à la salle fille 1 |
-| `2` | Accéder à la salle fille 2 |
-| `3` | Accéder à la salle fille 3 |
-| `4` | Accéder à la salle fille 4 |
-| `Échap` | Quitter le programme |
+|:---:|---|
+| `1` `2` `3` `4` | Aller dans le fils correspondant (uniquement les fils accessibles) |
+| `0` | Retourner à la salle père |
+| `↑` `←` `↓` `→` &nbsp;ou&nbsp; `Z` `Q` `S` `D` | Déplacer l'aventurier dans la salle |
+| `Entrée` | Entrer dans la salle quand l'aventurier se tient sur une porte |
+| `E` | Ramasser l'objet sous l'aventurier |
+| `5` `6` `7` `8` `9` | Sélectionner la case 1 à 5 de l'inventaire (re-appuyer désélectionne) |
+| `Échap` | Quitter |
 
-Les salles accessibles sont affichées en vert. Les directions sans salle fille sont représentées en gris.
+**Boutons à l'écran :** `Entrer`, `Récupérer`, `Utiliser` (objet sélectionné), `Autre labyrinthe`, `Nouveau labyrinthe`, `Réinitialiser l'historique` et `Paramètres` (rappel des touches).
 
-## 🧠 Fonctionnement technique
+---
 
-### La classe `Salle`
+## 🗂️ Structure du projet
 
-Chaque salle est représentée par un objet de la classe `Salle`, qui contient :
+```
+.
+├── main.py              # Boucle principale, gestion des touches et des clics
+├── affichage.py         # Dessin de la salle, de l'inventaire, des écrans (paramètres, victoire)
+├── class_salle.py       # Classe Salle : un nœud de l'arbre à 4 fils
+├── class_objet.py       # Classe Objet et placement aléatoire des objets
+├── class_inventaire.py  # Classe Inventaire : ajout, sélection, utilisation
+├── outils.py            # Génération du labyrinthe, saisie, texte, images, historique
+├── contexte.py          # Fenêtre, polices et couleurs
+└── textures/
+    ├── terrain/         # Salles et murs
+    ├── personnage/      # L'aventurier
+    ├── objet/           # Épée, potion, clé
+    ├── hud/             # Cadre de l'inventaire
+    └── key/             # Icônes des touches
+```
 
-- Un type de nœud : salle ou mur.
-- Une référence vers sa salle parente.
-- Quatre références vers ses salles filles (`f1`, `f2`, `f3` et `f4`).
+---
 
-Cette organisation permet de représenter le labyrinthe sous la forme d'un **arbre quaternaire**.
+## 🧠 Comment ça marche
 
-### La génération du labyrinthe
+- **Arbre de salles :** chaque `Salle` garde un lien vers son père et ses quatre fils `f1` à `f4`. Le type d'un fils vaut `0` (mur), `1` (salle) ou `3` (sortie).
+- **Génération :** à chaque étape, une place libre est choisie au hasard parmi toutes les salles déjà créées, ce qui donne des labyrinthes différents à chaque partie. La dernière salle créée est la sortie.
+- **Objets :** ils sont placés au hasard dans les salles intermédiaires, jamais dans la salle de départ ni dans la sortie.
+- **Durabilité :** chaque objet retient son nombre d'usages de départ, ce qui permet de dessiner la barre qui se vide à chaque utilisation.
 
-La fonction `creer_labyrinthe(nombre)` :
+---
 
-1. Crée une salle racine.
-2. Recherche les emplacements disponibles parmi les salles existantes.
-3. Choisit aléatoirement un emplacement libre.
-4. Crée une nouvelle salle fille.
-5. Répète ces étapes jusqu'à atteindre le nombre de salles demandé.
+## 🛣️ Pistes d'amélioration
 
-### La navigation
+- [ ] Donner un vrai effet aux objets (soin, ouverture de portes avec la clé…)
+- [ ] Ajouter des ennemis à combattre avec l'épée
+- [ ] Sauvegarder et recharger un labyrinthe
+- [ ] Ajouter des sons et de la musique
 
-La méthode `acceder_salle(x)` permet de se déplacer dans l'arbre :
+---
 
-- `0` permet de remonter vers le parent.
-- `1`, `2`, `3` et `4` permettent d'accéder aux salles filles correspondantes, lorsqu'elles existent.
+<div align="center">
 
-Si le déplacement demandé est impossible, l'utilisateur reste dans la salle actuelle.
+Fait avec 🐍 Python et Pygame
 
-## 🚀 Améliorations possibles
-
-- Ajouter un système de sortie et un objectif à atteindre.
-- Afficher le chemin parcouru par le joueur.
-- Ajouter une carte générale du labyrinthe.
-- Permettre de recommencer une partie avec une nouvelle génération.
-- Ajouter un compteur de déplacements.
-- Améliorer la représentation graphique des salles et des murs.
-- une sorte de menu principal avec des options
+</div>

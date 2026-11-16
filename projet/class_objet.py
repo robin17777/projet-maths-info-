@@ -12,6 +12,7 @@ class Objet:
         self.y = y
         self.taille = taille
         self.usages = usages
+        self.usages_max = usages   # durabilité de départ (sert à la barre dans l'inventaire)
         self.ramasse = False
         self.salle=None
     def get_nom(self):
@@ -22,6 +23,9 @@ class Objet:
 
     def get_usages(self):
         return self.usages
+
+    def get_usages_max(self):
+        return self.usages_max
 
     def est_ramasse(self):
         return self.ramasse
@@ -72,6 +76,7 @@ def placer_objets(salles):
     for obj in TOUS_LES_OBJETS:
         obj.salle = None
         obj.ramasse = False
+        obj.usages = obj.usages_max   # durabilité remise à neuf pour le nouveau labyrinthe
 
     candidates = salles[1:-1]
     if not candidates:

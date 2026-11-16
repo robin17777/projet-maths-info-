@@ -70,6 +70,23 @@ def afficher(actuelle, salles, racine,objets,inventaire):
     pygame.display.flip()
 
 
+def dessiner_barre_durabilite(slot, usages, usages_max):
+    """Petite barre sous la case : verte puis orange puis rouge selon ce qu'il reste."""
+    fond = pygame.Rect(slot.x, slot.bottom + 8, slot.width, 8)
+    ratio = max(0, min(1, usages / usages_max))
+    if ratio > 0.5:
+        couleur = VERT
+    elif ratio > 0.25:
+        couleur = ORANGE
+    else:
+        couleur = ROUGE
+    pygame.draw.rect(ecran, GRISF, fond, border_radius=4)
+    if ratio > 0:
+        plein = pygame.Rect(fond.x, fond.y, max(4, round(fond.width * ratio)), fond.height)
+        pygame.draw.rect(ecran, couleur, plein, border_radius=4)
+    pygame.draw.rect(ecran, BLANC, fond, 1, border_radius=4)
+
+
 def dessiner_salle(salle, salles,racine,objets,inventaire):
     global boutons_salles
     boutons.clear()
@@ -127,6 +144,9 @@ def dessiner_salle(salle, salles,racine,objets,inventaire):
                 image(ecran, objet.image, slot.center, (slot.width - 4, slot.height - 4))
             else:
                 texte(objet.nom, slot.centerx, slot.centery, BLANC, petite_police, centrer=True)
+            # barre de durabilité : seulement pour les objets à plusieurs utilisations
+            if objet.usages_max > 1:
+                dessiner_barre_durabilite(slot, objet.usages, objet.usages_max)
 
 
     # Bouton rentrer
@@ -261,22 +281,20 @@ def dessiner_salle(salle, salles,racine,objets,inventaire):
 # --- Page paramètres : icônes de touches ---
 _cache_icones = {}
 
-def _icone(nom, hauteur):
-    """Charge textures/key/<nom>.png, enlève les marges transparentes, garde les proportions."""
-    cle = (nom, hauteur)
-    if cle not in _cache_icones:
-        img = pygame.image.load(f"textures/key/{nom}.png").convert_alpha()
-        img = img.subsurface(img.get_bounding_rect()).copy()
-        largeur = round(img.get_width() * hauteur / img.get_height())
-        _cache_icones[cle] = pygame.transform.smoothscale(img, (largeur, hauteur))
-    return _cache_icones[cle]
+ICONE_TAILLE = (54, 48)   # toutes les touches occupent exactement cette taille (largeur, hauteur)
 
-def _dessiner_touches(noms, x, y_centre, hauteur=46, espace=8): #IA
+def _icone(nom):
+    """Charge textures/key/<nom>.png, enlève les marges transparentes, puis la met à ICONE_TAILLE."""
+    if nom not in _cache_icones:
+        img = pygame.image.load(f"textures/key/{nom}.png").convert_alpha()
+        img = img.subsurface(img.get_bounding_rect(min_alpha=200)).copy()
+        _cache_icones[nom] = pygame.transform.smoothscale(img, ICONE_TAILLE)
+    return _cache_icones[nom]
+
+def _dessiner_touches(noms, x, y_centre, espace=10):
     for nom in noms:
-        img = _icone(nom, hauteur)
-        case = max(img.get_width(), hauteur)
-        ecran.blit(img, (x + (case - img.get_width()) // 2, y_centre - img.get_height() // 2))
-        x += case + espace
+        ecran.blit(_icone(nom), (x, y_centre - ICONE_TAILLE[1] // 2))
+        x += ICONE_TAILLE[0] + espace
 
 def afficher_parametres():
     ecran.fill(FOND)
@@ -295,7 +313,6 @@ def afficher_parametres():
 
     # (touches à afficher, description, couleur de la barre d'accent)
     # None à la place des touches = mini bouton "Utiliser" dessiné à la main
-    #IA
     lignes = [
         (["1", "2", "3", "4"],                    "Accéder aux fils verts",                VERT),
         (["0"],                                   "Retourner à la salle père",             ORANGE),

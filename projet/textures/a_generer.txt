@@ -7,4 +7,3 @@ a faire
 mettre en place les barres de vies et autre 
 donner une vraie utilite aux objets
 mettre les monstres 
-finir de faire bien les immages des touches dans les parametres 

@@ -1,3 +1,6 @@
+import math
+import random
+import textwrap
 import pygame
 from contexte import *
 from outils import *
@@ -106,6 +109,26 @@ def porte_a_ouvrir(salle, inventaire):
     if numero is not None and salle.porte_fermee(numero) and salle.get_fils(numero).porte == objet.couleur:
         return numero
     return None
+#IA
+def ombre_sol(centre, largeur, hauteur, alpha=70):
+    """Petite ellipse sombre sous un objet / l'aventurier pour donner du relief."""
+    cle = (largeur, hauteur, alpha)
+    if cle not in _cache_ombres_sol:
+        surface = pygame.Surface((largeur, hauteur), pygame.SRCALPHA)
+        pygame.draw.ellipse(surface, (0, 0, 0, alpha), surface.get_rect())
+        _cache_ombres_sol[cle] = surface
+    ecran.blit(_cache_ombres_sol[cle], _cache_ombres_sol[cle].get_rect(center=centre))
+
+_cache_ombres_sol = {}
+
+
+def lignes_historique(largeur=68, max_lignes=5):
+    """Historique du chemin coupé en lignes ; on garde les dernières si c'est trop long."""
+    lignes = textwrap.wrap(historique(), width=largeur)
+    if len(lignes) > max_lignes:
+        lignes = ["..."] + lignes[-(max_lignes - 1):]
+    return lignes
+
 
 def afficher(actuelle, salles, racine,objets,inventaire):
 
@@ -113,13 +136,36 @@ def afficher(actuelle, salles, racine,objets,inventaire):
     boutons_salles.clear()
     boutond.clear()
 
-    ecran.fill(FOND)
+    ecran.blit(FOND_DEGRADE, (0, 0))
 
-    texte("Information labyrinthe :",20, 125,BLANC,police)
-    texte(f"Nombre de salles : {len(salles)}",20, 165,BLANC,petite_police)
-    texte(f"Profondeur actuelle : {actuelle.get_profondeur()}", 20, 185,BLANC,petite_police)
-    texte(f"Profondeur max : {profondeur_max(salles)}", 20, 205,BLANC,petite_police)
-    texte_multiligne(f"Chemin enprunté : {historique()}", 20, 550,BLANC,petite_police,90)
+    # --- carte "Arbre du labyrinthe" : infos + arbre (l'arbre est dessiné dans dessiner_salle) ---
+    panneau(pygame.Rect(20, 125, 725, 385), "Arbre du labyrinthe")
+    infos = [("Nombre de salles : ", len(salles)),
+             ("Profondeur actuelle : ", actuelle.get_profondeur()),
+             ("Profondeur max : ", profondeur_max(salles))]
+    y_info = 190
+    for libelle, valeur in infos:
+        texte(libelle, 40, y_info, GRIS, petite_police)
+        texte(valeur, 40 + petite_police.size(libelle)[0], y_info, BLANC, petite_police)
+        y_info += 25
+
+    # --- carte "Chemin emprunté" ---
+    panneau(pygame.Rect(20, 525, 725, 200), "Chemin emprunté")
+    y_hist = 587
+    for ligne in lignes_historique():
+        texte(ligne, 40, y_hist, BLANC, petite_police)
+        y_hist += 25
+
+    # --- carte "Objet sélectionné" ---
+    panneau(pygame.Rect(20, 740, 725, 125), "Objet sélectionné")
+    objet_sel = inventaire.objet_selectionne()
+    if objet_sel is None:
+        texte("Aucun objet sélectionné (touches 5 à 9 ou clic sur une case)", 40, 805, GRIS, petite_police)
+    else:
+        texte(objet_sel.nom, 40, 797, JAUNE, police)
+        usages = f"Usages : {objet_sel.usages}/{objet_sel.usages_max}"
+        texte(usages, 725 - petite_police.size(usages)[0], 801, BLANC, petite_police)
+        texte(objet_sel.description, 40, 832, GRIS, petite_police)
 
     dessiner_salle(actuelle, salles,racine,objets,inventaire)
 
@@ -136,8 +182,11 @@ def dessiner_salle(salle, salles,racine,objets,inventaire):
     y_pere = 245
     positions_x = [195, 315, 435, 555] # des 4 fils sur la largeur 
     y_fils = 440
+    temps = pygame.time.get_ticks()
 
     types = salle.voir_suivant()
+
+    rect_aventurier=pygame.Rect((cord_x-10, cord_y-10), (25, 25))
 
     #image salle 
     if salle==racine:
@@ -155,18 +204,21 @@ def dessiner_salle(salle, salles,racine,objets,inventaire):
         elif types[numero - 1] == 3:
             image_dans_trou("textures/terrain/tresor.png", numero)
 
-    #images objets 
+    #images objets (ombre au sol, petit flottement, halo quand l'aventurier est dessus)
     for objet in objets:
         if objet.salle is salle and not objet.ramasse:
+            if objet.est_sous(rect_aventurier, salle):
+                lueur(objet.get_rect(), JAUNE, 14, 12)
+            ombre_sol((objet.x, objet.y + objet.taille[1] // 2 - 4), 40, 12, 80)
+            flottement = round(math.sin(temps / 350 + objet.x) * 3)
             if objet.image:
-                image(ecran, objet.image, (objet.x, objet.y), objet.taille)
+                image(ecran, objet.image, (objet.x, objet.y + flottement), objet.taille)
             else:
-                pygame.draw.rect(ecran, JAUNE, objet.get_rect(), 2)   # carré temporaire
+                pygame.draw.rect(ecran, JAUNE, objet.get_rect().move(0, flottement), 2)   # carré temporaire
 
     #image personage
-
+    ombre_sol((cord_x, cord_y + 38), 56, 16, 80)
     image(ecran, "textures/personnage/aventurier.png", (cord_x, cord_y), (100, 100))
-    rect_aventurier=pygame.Rect((cord_x-10, cord_y-10), (25, 25))
     #pygame.draw.rect(ecran, VERT, rect_aventurier, 2)
 
     #image inventaire
@@ -177,7 +229,9 @@ def dessiner_salle(salle, salles,racine,objets,inventaire):
         if AFFICHER_SLOTS:
             pygame.draw.rect(ecran, VERT, slot, 1)
         if inventaire.selection == i:
-            pygame.draw.rect(ecran, JAUNE, slot.inflate(10, 10), 3, border_radius=6)
+            cadre = slot.inflate(10, 10)
+            lueur(cadre, JAUNE, 8, 12)
+            pygame.draw.rect(ecran, JAUNE, cadre, 3, border_radius=6)
         if i < len(inventaire.objets):
             objet = inventaire.objets[i]
             if objet.image:
@@ -188,45 +242,23 @@ def dessiner_salle(salle, salles,racine,objets,inventaire):
 
     # Bouton rentrer
     rentrer = pygame.Rect(1050, 50, 130, 40)
-    if zone_aventurier(salle,racine) is not None:
-        couleur_rentrer = VERTH if rentrer.collidepoint(souris) else VERT
-    else:
-        couleur_rentrer = GRIS
-    pygame.draw.rect(ecran, couleur_rentrer, rentrer, border_radius=10)
-    texte("Entrer",rentrer.centerx,rentrer.centery,GRISF,petite_police,centrer=True)
+    bouton(rentrer, "Entrer", VERT, actif=zone_aventurier(salle,racine) is not None)
     boutons.append((rentrer, "rentrer"))
 
     # Bouton récuperer
     recup = pygame.Rect(900, 50, 130, 40)
     sur_objet = any(objet.est_sous(rect_aventurier, salle) for objet in objets)
-    if sur_objet:
-        couleur_recuperer = VERTH if recup.collidepoint(souris) else VERT
-    else:
-        couleur_recuperer=GRIS
-    pygame.draw.rect(ecran, couleur_recuperer, recup, border_radius=10)
-    texte("Récuperer",recup.centerx,recup.centery,GRISF,petite_police,centrer=True)
+    bouton(recup, "Récupérer", VERT, actif=sur_objet)
     boutons.append((recup, "recuperer"))
 
-
-    # Bouton utiliser
+    # Bouton utiliser (grisé tant qu'on n'est pas devant une porte avec la bonne clé)
     use = pygame.Rect(750, 50, 130, 40)
-    if porte_a_ouvrir(salle, inventaire) is not None:
-        couleur_utiliser = VERTH if use.collidepoint(souris) else VERT
-    else:
-        couleur_utiliser = GRIS      # grisé tant qu'on n'est pas devant une porte avec la bonne clé
-    pygame.draw.rect(ecran, couleur_utiliser, use, border_radius=10)
-    texte("Utiliser", use.centerx, use.centery, GRISF, petite_police, centrer=True)
+    bouton(use, "Utiliser", VERT, actif=porte_a_ouvrir(salle, inventaire) is not None)
     boutons.append((use, "utiliser"))
-
 
     # Bouton lâcher
     lacher = pygame.Rect(600, 50, 130, 40)
-    if inventaire.selection is not None:
-        couleur_lacher = VERTH if lacher.collidepoint(souris) else VERT
-    else:
-        couleur_lacher = GRIS
-    pygame.draw.rect(ecran, couleur_lacher, lacher, border_radius=10)
-    texte("Lâcher", lacher.centerx, lacher.centery, GRISF, petite_police, centrer=True)
+    bouton(lacher, "Lâcher", VERT, actif=inventaire.selection is not None)
     boutons.append((lacher, "lacher"))
 
 
@@ -251,43 +283,53 @@ def dessiner_salle(salle, salles,racine,objets,inventaire):
     boutond.append((reset, "reset"))
 
 
-    # Dessin des boutons avec effet hover
-
-    textes = {"recuperer": "Récuperer",
-              "reset":"Réinitialiser l'historique",
-              "utiliser": "Utiliser",
+    # Dessin des boutons du haut (effet de survol géré par bouton())
+    textes = {"reset":"Réinitialiser l'historique",
               "parametres": "Parametres",
               "autrelab": "Autre labyrinthe",
               "nvlab": "Nouveau labyrinthe"}
 
-    for bouton, nom in boutond:
-        if bouton.collidepoint(souris):
-            couleur = BLEUH
-        else:
-            couleur = BLEU
-        pygame.draw.rect(ecran, couleur, bouton, border_radius=10)
-        texte(textes[nom],bouton.centerx,bouton.centery,GRISF,petite_police,centrer=True)
+    for rect_b, nom in boutond:
+        bouton(rect_b, textes[nom], BLEU)
 
+
+    # Couleur de chaque fils (et de sa branche)
+    infos_fils = []
+    for i in range(4):
+        numero = i + 1
+        verrouille = salle.porte_fermee(numero)
+        accessible = (types[i] == 1 or types[i] == 3) and not verrouille
+        if verrouille:
+            couleur = COULEURS_PORTES[salle.get_fils(numero).porte]
+        elif types[i] == 1:
+            couleur = VERT
+        elif types[i] == 3:
+            couleur = JAUNE
+        else:
+            couleur = (71, 85, 105)
+        infos_fils.append((verrouille, accessible, couleur))
 
     # Branches entre le pere et les fils
     for i in range(4):
-        couleur = VERT if types[i] == 1 else GRIS
-                        #quel ecran , la couleur, coord x , cord y , epaisseur de la ligne
-        pygame.draw.line(ecran,couleur,(LARGEUR//4, y_pere + 25),(positions_x[i], y_fils - 25),4)
+        couleur = infos_fils[i][2]
+        debut = (LARGEUR//4, y_pere + 25)
+        fin = (positions_x[i], y_fils - 25)
+        pygame.draw.line(ecran, couleur, debut, fin, 4)
+        pygame.draw.circle(ecran, couleur, debut, 5)
+        pygame.draw.circle(ecran, couleur, fin, 5)
 
-    # Bouton du noeud pere
-                      #rectangle(coord x,coord y,longueur,hauteur)
+    # Noeud du pere (la salle actuelle)
     rect_pere = pygame.Rect(LARGEUR//4 - 75, y_pere - 25, 150, 50)
-                                            #arrondi sur les coin du rectangle de 10 pixel
-    pygame.draw.rect(ecran, JAUNE if salle.get_type_fils()==3 else ORANGE, rect_pere, border_radius=10)
+    couleur_pere = JAUNE if salle.get_type_fils()==3 else ORANGE
     if salle.get_type_fils()==3:
         text="Sortie"
     else:
         identifiant = salles.index(salle) + 1
         text=f"Salle {identifiant}"
-
-    texte(text, rect_pere.centerx, rect_pere.centery, GRISF, police, centrer=True)
-                    #pour avoir les coord du centre du rectangle
+    lueur(rect_pere, couleur_pere, 12, 14)
+    bouton(rect_pere, text, couleur_pere, cliquable=salle.pere is not None, police_utilisee=police)
+    if salle.pere is not None:
+        badge_touche((rect_pere.left - 28, rect_pere.centery), "0")
     """Ici jusqu'a la fin ca sert pour les boutons_salles"""               
     # Le clic sur le pere permet de remonter
     boutons_salles.append((rect_pere, 0))
@@ -296,23 +338,10 @@ def dessiner_salle(salle, salles,racine,objets,inventaire):
     for i in range(4):
         x = positions_x[i]
         numero = i + 1
-
-        verrouille = salle.porte_fermee(numero)
-        accessible = (types[i] == 1 or types[i]==3) and not verrouille
-
-        if verrouille:
-            couleur = COULEURS_PORTES[salle.get_fils(numero).porte]
-        elif types[i] == 1:
-            couleur = VERT
-        elif types[i]==3:
-            couleur = JAUNE
-        else:
-            couleur=GRIS
-                
+        verrouille, accessible, couleur = infos_fils[i]
 
         rect_fils = pygame.Rect(x - 55, y_fils - 25, 110, 50)
 
-        pygame.draw.rect(ecran, couleur, rect_fils, border_radius=10)
         if verrouille:
             nom_fils = f"Porte {NOMS_PORTES[salle.get_fils(numero).porte]}"
         elif types[i] == 1:
@@ -321,10 +350,10 @@ def dessiner_salle(salle, salles,racine,objets,inventaire):
             nom_fils = "Sortie"
         else:
             nom_fils ="Mur"
-        texte(nom_fils, rect_fils.centerx, rect_fils.centery, GRISF, petite_police, centrer=True)
+        bouton(rect_fils, nom_fils, couleur, actif=types[i] != 0, cliquable=accessible)
 
         #pour mettre le chiffre a taper sous chaque fils 
-        texte(numero, x, y_fils + 45, BLANC, petite_police, centrer=True)
+        badge_touche((x, y_fils + 45), numero)
 
         # Seules les salles accessibles sont cliquables
         if accessible:
@@ -363,7 +392,7 @@ def _dessiner_touches(noms, x, y_centre, hauteur=46, espace=8): #IA
         x += img.get_width() + espace
 
 def afficher_parametres():
-    ecran.fill(FOND)
+    ecran.blit(FOND_DEGRADE, (0, 0))
     boutons.clear()
     souris = pygame.mouse.get_pos()
 
@@ -373,8 +402,7 @@ def afficher_parametres():
 
     # Bouton retour
     retour = pygame.Rect(LARGEUR - 150, 20, 130, 40)
-    pygame.draw.rect(ecran, BLEUH if retour.collidepoint(souris) else BLEU, retour, border_radius=10)
-    texte("Retour", retour.centerx, retour.centery, GRISF, petite_police, centrer=True)
+    bouton(retour, "Retour", BLEU)
     boutons.append((retour, "retour"))
 
     # (touches à afficher, description, couleur de la barre d'accent)
@@ -386,7 +414,7 @@ def afficher_parametres():
         (["entrer"],                              "Entrer dans la salle (sur une porte)",  BLEU),
         (["haut", "gauche", "bas", "droite"],     "Déplacer l'aventurier dans la salle",   BLEU),
         (["5", "6", "7", "8", "9"],               "Sélectionner un objet (touche ou clic)", JAUNE),
-        (["f"],                                   "Ramasser l'objet sous l'aventurier",    JAUNE, "Récuperer"),
+        (["f"],                                   "Ramasser l'objet sous l'aventurier",    JAUNE, "Récupérer"),
         (["e"],                                   "Ouvrir une porte (clé sélectionnée)",   JAUNE, "Utiliser"),
         (["a"],                                   "Lâcher l'objet sélectionné",            JAUNE, "Lâcher"),
         (["esc"],                                 "Quitter le jeu",                        ROUGE),
@@ -398,15 +426,15 @@ def afficher_parametres():
     for touches, description, accent, *reste in lignes:
         bouton_txt = reste[0] if reste else None
         carte = pygame.Rect(x_carte, y, largeur_carte, hauteur_carte)
-        pygame.draw.rect(ecran, (30, 41, 59), carte, border_radius=12)
+        ombre(carte, 12, decalage=4, alpha=70)
+        pygame.draw.rect(ecran, CARTE, carte, border_radius=12)
         pygame.draw.rect(ecran, accent, (carte.x, carte.y + 10, 6, carte.height - 20), border_radius=3)
 
         x_touches = carte.x + 30
         if bouton_txt is not None:
-            bouton = pygame.Rect(carte.x + 30, carte.centery - 20, 130, 40)
-            pygame.draw.rect(ecran, VERT, bouton, border_radius=10)
-            texte(bouton_txt, bouton.centerx, bouton.centery, GRISF, petite_police, centrer=True)
-            x_touches = bouton.right + 20
+            rect_mini = pygame.Rect(carte.x + 30, carte.centery - 20, 130, 40)
+            bouton(rect_mini, bouton_txt, VERT, cliquable=False)
+            x_touches = rect_mini.right + 20
         _dessiner_touches(touches, x_touches, carte.centery)
 
         img_txt = police.render(description, True, BLANC)
@@ -417,21 +445,44 @@ def afficher_parametres():
 
     pygame.display.flip()
 
+_confettis = []
+COULEURS_CONFETTIS = [BLEU, VERT, JAUNE, ROUGE, ORANGE]
+
+def _maj_confettis():
+    """Fait tomber des confettis (un peu au hasard) derrière la carte de victoire."""
+    if len(_confettis) < 140 and random.random() < 0.7:
+        _confettis.append({"x": random.uniform(0, LARGEUR), "y": -10.0,
+                           "vy": random.uniform(2, 5), "vx": random.uniform(-1, 1),
+                           "t": random.randint(6, 12), "c": random.choice(COULEURS_CONFETTIS),
+                           "ph": random.uniform(0, 6.28)})
+    for c in _confettis[:]:
+        c["y"] += c["vy"]
+        c["x"] += c["vx"] + math.sin(c["y"] / 30 + c["ph"])
+        if c["y"] > HAUTEUR + 10:
+            _confettis.remove(c)
+        else:
+            pygame.draw.rect(ecran, c["c"], (c["x"], c["y"], c["t"], c["t"] * 0.6))
+
 def afficher_gagne():
-    ecran.fill(FOND)
+    ecran.blit(FOND_DEGRADE, (0, 0))
     boutons.clear()
+    _maj_confettis()
 
-    texte("VOUS AVEZ GAGNÉ", LARGEUR // 2, 80, JAUNE, grande_police, centrer=True)
+    carte = pygame.Rect(LARGEUR // 2 - 350, 200, 700, 420)
+    lueur(carte, JAUNE, 24, 14)
+    panneau(carte, rayon=24)
 
-    autre_lab = pygame.Rect(LARGEUR//2 - 100, HAUTEUR//2 - 50, 200, 40)
-    pygame.draw.rect(ecran, BLEU, autre_lab, border_radius=10)
-    texte("Autre labyrinthe", autre_lab.centerx, autre_lab.centery, GRISF, petite_police, centrer=True)
+    flottement = math.sin(pygame.time.get_ticks() / 400) * 6
+    texte("VOUS AVEZ GAGNÉ", LARGEUR // 2, 290 + flottement, JAUNE, titre_police, centrer=True)
+    texte("Tu as trouvé la sortie du labyrinthe !", LARGEUR // 2, 365, BLANC, police, centrer=True)
+    pygame.draw.line(ecran, CARTE_BORD, (LARGEUR // 2 - 200, 410), (LARGEUR // 2 + 200, 410), 2)
+
+    autre_lab = pygame.Rect(LARGEUR // 2 - 140, 450, 280, 52)
+    bouton(autre_lab, "Autre labyrinthe", BLEU, police_utilisee=police)
     boutons.append((autre_lab, "autrelab"))
 
-
-    nv_lab = pygame.Rect(LARGEUR//2 - 100, HAUTEUR//2 + 20, 200, 40)
-    pygame.draw.rect(ecran, BLEU, nv_lab, border_radius=10)
-    texte("Nouveau labyrinthe", nv_lab.centerx, nv_lab.centery, GRISF, petite_police, centrer=True)
+    nv_lab = pygame.Rect(LARGEUR // 2 - 140, 525, 280, 52)
+    bouton(nv_lab, "Nouveau labyrinthe", BLEU, police_utilisee=police)
     boutons.append((nv_lab, "nvlab"))
 
     pygame.display.flip()

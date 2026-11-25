@@ -1,0 +1,36 @@
+a faire :
+
+-retirer toute les exeception si il trouve pas les textures ou tout les test de verification qui 
+ne sont pas enssentiel 
+
+-rajouter dans les stats du laby le nombre de piece visités
+
+-renommer sortie bloque par une porte dans le menue de config par sortie bloqué et le mettre juste a droite
+du choix pour le nombre de porte 
+
+-monstre plus petit plus en mettre dans l'ecran de config pour le nombre et enlever les copies de la clase 
+
+-faire spawn le monstre devant la porte vers une salle pour boucher l'entree
+
+-rajouter aux monstres une description rapide pour qu'elle apparaise dans le panneau 
+
+-refaire un equilibrage stats pv du joeur et des monstres plus leurs degats 
+
+-donner une vraie utilite aux objets genre contre les monstres pour l'epe potion de degat pour faire des
+degats aux monstres et potion de soin pour se soigner 
+
+-rajouter des stats a l'aventurire plus les afficher dans un petit panneau a gauche de l'inventaire avec sa vie
+sous forme de barre d'hp le nombre de porte ouverte et le nombre de monstres tués
+
+-faire un ecrand de defaite 
+
+-generer un fond pour l'ecran principal et pour la victoire et la defaite
+
+-faire en sorte qu'il y ai un boutton combat pour attaquer un tour chacun on attaque une fois chacun par appuis 
+sur le bouton 
+
+-updtate le menu d'aide avce toutes les nouvelles infos plus tu peux y mettre des petites images 
+
+-rajouter un boss dragon + texture a generer qui se trouve juste devant la sortie
+et empecher les porte fermee de se mettre ici
+

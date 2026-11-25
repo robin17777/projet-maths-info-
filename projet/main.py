@@ -7,6 +7,7 @@ from class_inventaire import *
 import affichage
 import class_objet
 from rendu import demander_options_labyrinthe
+from class_monstre import placer_monstres
 
 choix = demander_options_labyrinthe(10)
 
@@ -17,6 +18,7 @@ if choix is None:
 nombre, options = choix
 racine, salles = creer_labyrinthe(nombre)
 class_objet.placer_objets(salles, options)
+placer_monstres(salles)
 inventaire = Inventaire()
 actuelle = racine
 ecran_actuel = "labyrinthe"
@@ -79,7 +81,7 @@ while actif:
 
                 elif evenement.key == pygame.K_a:
                     lacher_objet(actuelle, inventaire, affichage.cord_x, affichage.cord_y)
-
+                #pour selectionner les casses de l'inv
                 elif indice_touche_inventaire(evenement) is not None:
                     inventaire.selectionner(indice_touche_inventaire(evenement))
 
@@ -113,13 +115,14 @@ while actif:
 
                 for rectangle, action in boutons:
                     if rectangle.collidepoint(position):
-                        if action == "parametres" and ecran_actuel=="labyrinthe":
-                            ecran_actuel="parametres"
-                        elif action == "retour" and ecran_actuel =="parametres":
+                        if action in ("parametres", "aide") and ecran_actuel=="labyrinthe":
+                            ecran_actuel = action
+                        elif action == "retour" and ecran_actuel in ("parametres", "aide"):
                             ecran_actuel = "labyrinthe"
                         elif action == "autrelab" and ecran_actuel=="labyrinthe":
                             racine, salles = creer_labyrinthe(nombre)
                             class_objet.placer_objets(salles, options)
+                            placer_monstres(salles)
                             inventaire.vider()
                             actuelle = racine
                             passages_visites.clear()
@@ -132,6 +135,7 @@ while actif:
                                 nombre, options = choix
                                 racine, salles = creer_labyrinthe(nombre)
                                 class_objet.placer_objets(salles, options)
+                                placer_monstres(salles)
                                 inventaire.vider()
                                 actuelle = racine
                                 passages_visites.clear()
@@ -166,6 +170,9 @@ while actif:
 
     elif ecran_actuel == "parametres":
         afficher_parametres()
+
+    elif ecran_actuel == "aide":
+        afficher_aide()
 
 
     

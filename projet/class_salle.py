@@ -9,6 +9,7 @@ class Salle:
         self.profondeur =0
         self.porte = None
         self.porte_ouverte = False
+        self.monstre = None   # voir class_monstre.py
 
 
         self.f1 = None

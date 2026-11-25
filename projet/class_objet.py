@@ -100,7 +100,7 @@ def _position_libre(salle):
 
 
 #ia
-def placer_portes_et_cles(salles, cles=None):
+def placer_portes_et_cles(salles, cles=None, sortie_bloquee=False):
     for salle in salles:
         salle.porte = None
         salle.porte_ouverte = False
@@ -110,9 +110,15 @@ def placer_portes_et_cles(salles, cles=None):
     candidates_cles = salles[1:-1]
     portes_possibles = salles[1:]
     cles_placees = []
+    # salles par lesquelles on doit forcément passer pour atteindre la sortie (la sortie comprise)
+    chemin_sortie = [s for s in salles[1:] if est_ancetre_ou_egal(s, salles[-1])]
 
     for cle in cles:
         choix = [s for s in portes_possibles if s.porte is None and not any(est_ancetre_ou_egal(s, k) for k in cles_placees)]
+        if sortie_bloquee and not cles_placees:
+            # 1re clé : sa porte barre la route de la sortie. Sa clé est placée hors de la zone
+            # derrière cette porte (voir 'endroits'), donc le labyrinthe reste faisable.
+            choix = [s for s in choix if s in chemin_sortie]
         random.shuffle(choix)
         for salle_porte in choix:
             endroits = [s for s in candidates_cles if not est_ancetre_ou_egal(salle_porte, s)]
@@ -139,9 +145,11 @@ def placer_objets(salles, options=None):
     if options is None:
         quantites = {obj.nom: 1 for obj in OBJETS_MENU}
         couleurs = {"bleu", "jaune", "rouge"}
+        sortie_bloquee = False
     else:
         quantites = options["objets"]
         couleurs = options["portes"]
+        sortie_bloquee = bool(options.get("sortie_bloquee", False))
 
     candidates = salles[1:-1]
     if not candidates:
@@ -154,4 +162,7 @@ def placer_objets(salles, options=None):
             exemplaire = obj if k == 0 else obj.copie()   # le 1er est l'objet d'origine, les autres des copies
             exemplaire.placer(salle, x, y)
 
-    placer_portes_et_cles(salles, [c for c in (cle_b, cle_j, cle_r) if c.couleur in couleurs])
+    cles = [c for c in (cle_b, cle_j, cle_r) if c.couleur in couleurs]
+    if sortie_bloquee and not cles:
+        cles = [cle_b]   # il faut au moins une porte pour bloquer la sortie
+    placer_portes_et_cles(salles, cles, sortie_bloquee)

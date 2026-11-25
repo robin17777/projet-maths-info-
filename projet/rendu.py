@@ -91,26 +91,134 @@ def panneau(rect, titre=None, rayon=16):
         pygame.draw.line(ecran, CARTE_BORD, (rect.x + 20, rect.y + 48), (rect.right - 20, rect.y + 48), 2)
 
 
+# --- Texture des boutons (planche de bois : textures/hud/bouton.png) -----------------
+# Si bouton.png existe à l'un de ces endroits, TOUS les boutons du jeu l'utilisent (le premier trouvé
+# est pris). Sinon les boutons gardent leur dessin habituel.
+CHEMINS_TEXTURE_BOUTON = ["textures/hud/bouton.png", "textures/bouton.png", "bouton.png"]
+COULEUR_TEXTE_BOUTON = (255, 240, 205)      # texte crème
+COULEUR_TEXTE_OFF_BOUTON = (160, 148, 135)  # texte d'un bouton grisé
+OMBRE_TEXTE_BOUTON = (35, 18, 8)            # petit relief sombre sous le texte
+
+# Découpe de bouton.png, en fraction de sa largeur :
+TEX_COIN = 0.125            # coin (plaque de métal + montant) à gauche et à droite
+TEX_BANDE = (0.16, 0.43)    # bande de bois sans ornement, étirée pour remplir le milieu du bouton
+TEX_ORNEMENT = (0.44, 0.56) # losange doré du milieu, posé au centre si le bouton est assez large
+ECHELLE_X_COINS = 0.7       # coins un peu resserrés : plus de place pour le texte
+
+_texture_bouton_cache = []      # [image] ou [None] une fois la recherche faite
+_cache_surfaces_bouton = {}
+_cache_polices_reduites = {}
+TAILLES_POLICES = {police: 25, petite_police: 19, grande_police: 34}
+
+
+def _texture_bouton():
+    """Charge bouton.png une seule fois (marges transparentes enlevées). None si absent."""
+    if not _texture_bouton_cache:
+        image_bouton = None
+        for chemin in CHEMINS_TEXTURE_BOUTON:
+            try:
+                img = pygame.image.load(chemin).convert_alpha()
+                image_bouton = img.subsurface(img.get_bounding_rect(min_alpha=128)).copy()
+                break
+            except (FileNotFoundError, pygame.error):
+                continue
+        _texture_bouton_cache.append(image_bouton)
+    return _texture_bouton_cache[0]
+
+
+def _surface_bouton(largeur, hauteur, etat):
+    """Planche de bois à la taille du bouton pour l'état 'normal', 'survol' ou 'off'.
+    Retourne (surface, largeur d'un coin)."""
+    cle = (largeur, hauteur, etat)
+    if cle in _cache_surfaces_bouton:
+        return _cache_surfaces_bouton[cle]
+
+    tex = _texture_bouton()
+    tw, th = tex.get_size()
+    echelle = hauteur / th
+    coin_src = round(tw * TEX_COIN)
+    coin = max(1, min(round(coin_src * echelle * ECHELLE_X_COINS), largeur // 2))
+    surf = pygame.Surface((largeur, hauteur), pygame.SRCALPHA)
+
+    def morceau(x0, x1, w):    # découpe [x0, x1[ de la texture, mise à la taille w x hauteur
+        zone = tex.subsurface(pygame.Rect(x0, 0, x1 - x0, th))
+        return pygame.transform.smoothscale(zone, (max(1, w), hauteur))
+
+    milieu = largeur - 2 * coin
+    if milieu > 0:
+        surf.blit(morceau(round(tw * TEX_BANDE[0]), round(tw * TEX_BANDE[1]), milieu), (coin, 0))
+        o0, o1 = round(tw * TEX_ORNEMENT[0]), round(tw * TEX_ORNEMENT[1])
+        larg_ornement = round((o1 - o0) * echelle)
+        if larg_ornement >= 1 and milieu >= larg_ornement * 2.3:
+            surf.blit(morceau(o0, o1, larg_ornement), ((largeur - larg_ornement) // 2, 0))
+    surf.blit(morceau(0, coin_src, coin), (0, 0))
+    surf.blit(morceau(tw - coin_src, tw, coin), (largeur - coin, 0))
+
+    if etat == "survol":
+        surf.fill((22, 22, 22, 0), special_flags=pygame.BLEND_RGB_ADD)          # bois un peu plus clair
+    elif etat == "off":
+        surf.fill((105, 100, 100, 255), special_flags=pygame.BLEND_RGBA_MULT)   # bois assombri
+
+    _cache_surfaces_bouton[cle] = (surf, coin)
+    return _cache_surfaces_bouton[cle]
+
+
+def _police_ajustee(police_utilisee, message, largeur_max):
+    """Police réduite si le texte dépasse largeur_max (pour ne jamais passer sous les coins en métal)."""
+    largeur = police_utilisee.size(message)[0]
+    taille = TAILLES_POLICES.get(police_utilisee)
+    if largeur <= largeur_max or taille is None:
+        return police_utilisee
+    taille = max(11, int(taille * largeur_max / largeur))
+    if taille not in _cache_polices_reduites:
+        _cache_polices_reduites[taille] = pygame.font.SysFont("Arial", taille)
+    return _cache_polices_reduites[taille]
+
+
 def bouton(rect, message, couleur, actif=True, cliquable=True, police_utilisee=None, rayon=10):
-    """Bouton arrondi avec ombre, bordure claire et effet de survol (le bouton se soulève).
+    """Bouton avec ombre et effet de survol (le bouton se soulève).
+
+    Avec une texture bouton.png : planche de bois, lueur de la couleur du bouton au survol,
+    texte crème. Sans texture : bouton arrondi coloré avec bordure claire.
 
     actif=False      -> bouton grisé
-    cliquable=False  -> couleur normale mais pas d'effet de survol
+    cliquable=False  -> pas d'effet de survol
     """
     if police_utilisee is None:
         police_utilisee = petite_police
     survol = actif and cliquable and rect.collidepoint(pygame.mouse.get_pos())
+    dessin = rect.move(0, -2) if survol else rect
 
+    if _texture_bouton() is not None:
+        etat = "off" if not actif else ("survol" if survol else "normal")
+        if survol:
+            lueur(dessin, couleur, 6, 12)        # halo dans la couleur du bouton (vert, bleu, rouge...)
+        ombre(dessin, 5, decalage=4 if survol else 3, alpha=100 if actif else 50)
+        surface, coin = _surface_bouton(rect.width, rect.height, etat)
+        ecran.blit(surface, dessin)
+        police_texte = _police_ajustee(police_utilisee, message, max(rect.width - 2 * coin - 8, int(rect.width * 0.6)))
+        couleur_texte = COULEUR_TEXTE_BOUTON if actif else COULEUR_TEXTE_OFF_BOUTON
+        texte(message, dessin.centerx, dessin.centery + 2, OMBRE_TEXTE_BOUTON, police_texte, centrer=True)
+        texte(message, dessin.centerx, dessin.centery, couleur_texte, police_texte, centrer=True)
+        return
+
+    ombre(dessin, rayon, decalage=4 if survol else 3, alpha=100 if actif else 50)
     if not actif:
         fond, couleur_texte = BOUTON_OFF, TEXTE_OFF
     else:
         fond, couleur_texte = (eclaircir(couleur, 22) if survol else couleur), GRISF
-
-    dessin = rect.move(0, -2) if survol else rect
-    ombre(dessin, rayon, decalage=4 if survol else 3, alpha=100 if actif else 50)
     pygame.draw.rect(ecran, fond, dessin, border_radius=rayon)
     pygame.draw.rect(ecran, eclaircir(fond, 35) if actif else CARTE_BORD, dessin, 2, border_radius=rayon)
     texte(message, dessin.centerx, dessin.centery, couleur_texte, police_utilisee, centrer=True)
+
+
+def lueur_noeud(rect, couleur, intense=False, rayon=12, etendue=14):
+    """Lueur d'un noeud de l'arbre : toujours présente, plus forte et plus large quand intense=True
+    (curseur dessus, ou aventurier posé sur la porte correspondante)."""
+    lueur(rect, couleur, rayon, etendue)
+    if intense:
+        lueur(rect, couleur, rayon, etendue + 6)
+        lueur(rect, couleur, rayon, etendue)      # superposée : halo plus dense
 
 
 def badge_touche(centre, message, cote=30):
@@ -318,7 +426,8 @@ NB_EMPLACEMENTS_OBJETS = 4   # lignes d'objets prévues dans le menu (augmente s
 
 def options_par_defaut():
     return {"portes": {"bleu", "jaune", "rouge"},
-            "objets": {objet.nom: 1 for objet in class_objet.OBJETS_MENU}}
+            "objets": {objet.nom: 1 for objet in class_objet.OBJETS_MENU},
+            "sortie_bloquee": False}
 
 
 def demander_options_labyrinthe(nombre_defaut, options_defaut=None):
@@ -330,6 +439,7 @@ def demander_options_labyrinthe(nombre_defaut, options_defaut=None):
     defaut = options_defaut or options_par_defaut()
     portes = set(defaut["portes"])
     quantites = dict(defaut["objets"])
+    sortie_bloquee = bool(defaut.get("sortie_bloquee", False))   # case « sortie bloquée par une porte »
     nombre = str(nombre_defaut)
     message_erreur = ""
 
@@ -348,6 +458,7 @@ def demander_options_labyrinthe(nombre_defaut, options_defaut=None):
     p_objets = pygame.Rect(p_portes.right + 20, carte.y + 160, carte.right - 30 - (p_portes.right + 20), hauteur_panneaux)
     lignes_portes = [(couleur, pygame.Rect(p_portes.x + 15, p_portes.y + 62 + i * 108, p_portes.width - 30, 96))
                      for i, couleur in enumerate(("bleu", "jaune", "rouge"))]
+    rect_sortie = pygame.Rect(p_portes.x + 15, p_portes.y + 384, p_portes.width - 30, 44)
     lignes_objets = []
     for i, objet in enumerate(objets_menu):
         rect = pygame.Rect(p_objets.x + 15, p_objets.y + 62 + i * pas_objets, p_objets.width - 30, hauteur_ligne_objet)
@@ -359,7 +470,8 @@ def demander_options_labyrinthe(nombre_defaut, options_defaut=None):
 
     def valider():
         if nombre.isdigit() and int(nombre) >= 1:
-            return int(nombre), {"portes": set(portes), "objets": dict(quantites)}
+            return int(nombre), {"portes": set(portes), "objets": dict(quantites),
+                                 "sortie_bloquee": sortie_bloquee}
         return None
 
     while True:
@@ -387,6 +499,12 @@ def demander_options_labyrinthe(nombre_defaut, options_defaut=None):
                 for couleur, rect in lignes_portes:
                     if rect.collidepoint(pos):
                         portes.symmetric_difference_update({couleur})   # coche / décoche
+                        if not portes:
+                            sortie_bloquee = False       # plus de porte : la sortie ne peut plus être bloquée
+                if rect_sortie.collidepoint(pos):
+                    sortie_bloquee = not sortie_bloquee
+                    if sortie_bloquee and not portes:
+                        portes.add("bleu")               # il faut au moins une porte pour bloquer la sortie
                 for objet, rect, moins, plus in lignes_objets:
                     if moins.collidepoint(pos):
                         quantites[objet.nom] = max(0, quantites[objet.nom] - 1)
@@ -431,6 +549,11 @@ def demander_options_labyrinthe(nombre_defaut, options_defaut=None):
             texte("ouverte par sa clé  >", rect.x + 175, rect.centery + 8, GRIS, petite_police)
             _dessiner_image_menu(cles_portes[couleur].image, (rect.right - 45, rect.centery), 60, coche)
 
+        # case : la sortie est toujours derrière au moins une porte (labyrinthe quand même faisable)
+        _ligne_option(rect_sortie, sortie_bloquee, ORANGE)
+        texte("Sortie bloquée par une porte", rect_sortie.x + 70, rect_sortie.centery - 14,
+              BLANC if sortie_bloquee else GRIS, police)
+
         # objets (case + image + nom + quantité avec - et +)
         panneau(p_objets, "Objets")
         for objet, rect, moins, plus in lignes_objets:
@@ -446,6 +569,8 @@ def demander_options_labyrinthe(nombre_defaut, options_defaut=None):
 
         # résumé
         resume = f"Salles : {nombre or '?'}   |   Portes : {len(portes)}   |   Objets : {total_objets}"
+        if sortie_bloquee:
+            resume += "   |   Sortie verrouillée"
         texte(resume, carte.centerx, p_portes.bottom + 30, BLANC, petite_police, centrer=True)
         if message_erreur:
             texte(message_erreur, carte.centerx, p_portes.bottom + 58, ROUGE, petite_police, centrer=True)
